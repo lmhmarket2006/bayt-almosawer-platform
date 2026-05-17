@@ -329,7 +329,10 @@ export default async function AdminDashboardPage() {
                     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                       <div>
                         <p className="font-extrabold">{order.user.name}</p>
-                        <p className="mt-1 text-xs text-[var(--text-muted)]" dir="ltr">
+                        <p
+                          className="mt-1 text-xs text-[var(--text-muted)]"
+                          dir="ltr"
+                        >
                           {order.user.email}
                         </p>
                       </div>
@@ -366,6 +369,26 @@ export default async function AdminDashboardPage() {
             </div>
 
             <div className="grid gap-3">
+              <Link
+                href="/admin/settings"
+                className="rounded-[1.25rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <p className="font-extrabold">إعدادات المنصة</p>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  عدّل بيانات التواصل والتحويل البنكي وتعليمات الدفع.
+                </p>
+              </Link>
+
+              <Link
+                href="/admin/security"
+                className="rounded-[1.25rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <p className="font-extrabold">الأمان وكلمة المرور</p>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  غيّر كلمة مرور الأدمن قبل التشغيل التجاري.
+                </p>
+              </Link>
+
               <Link
                 href="/admin/courses/new"
                 className="rounded-[1.25rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
@@ -435,7 +458,10 @@ export default async function AdminDashboardPage() {
                   >
                     <div>
                       <p className="font-extrabold">{latestUser.name}</p>
-                      <p className="mt-1 text-xs text-[var(--text-muted)]" dir="ltr">
+                      <p
+                        className="mt-1 text-xs text-[var(--text-muted)]"
+                        dir="ltr"
+                      >
                         {latestUser.email}
                       </p>
                     </div>

@@ -266,3 +266,20 @@ model Setting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+model PlatformSettings {
+  id                String   @id @default(cuid())
+  siteName          String   @default("منصة بيت المصور التعليمية")
+  supportEmail      String?
+  supportPhone      String?
+  whatsappNumber    String?
+
+  bankName          String?
+  bankAccountName   String?
+  bankAccountNumber String?
+  bankIban          String?
+
+  orderInstructions String?  @db.Text
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
