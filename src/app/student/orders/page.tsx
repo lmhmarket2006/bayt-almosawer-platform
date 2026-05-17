@@ -119,7 +119,7 @@ export default async function StudentOrdersPage({
 
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
             هنا تظهر طلباتك وحالة تأكيد الدفع. إذا كان الطلب بانتظار الدفع،
-            ستجد بيانات التحويل البنكي وتعليمات إرسال الإيصال في نفس الصفحة.
+            ستجد بيانات التحويل البنكي وطريقة إرسال الإيصال في نفس الصفحة.
           </p>
         </section>
 
@@ -223,11 +223,11 @@ export default async function StudentOrdersPage({
                       {isPendingPayment ? (
                         <div>
                           <p className="font-bold text-[var(--brand-500)]">
-                            تعليمات الدفع
+                            الدفع البنكي
                           </p>
 
                           <h3 className="mt-2 text-2xl font-extrabold">
-                            بيانات التحويل البنكي
+                            بيانات التحويل
                           </h3>
 
                           {hasPaymentInfo ? (
@@ -281,10 +281,7 @@ export default async function StudentOrdersPage({
 
                               {settings?.orderInstructions ? (
                                 <div className="rounded-2xl bg-white p-4">
-                                  <p className="text-xs font-bold text-[var(--text-muted)]">
-                                    التعليمات
-                                  </p>
-                                  <p className="mt-2 whitespace-pre-line text-sm leading-7 text-[var(--text-muted)]">
+                                  <p className="whitespace-pre-line text-sm leading-7 text-[var(--text-muted)]">
                                     {settings.orderInstructions}
                                   </p>
                                 </div>
