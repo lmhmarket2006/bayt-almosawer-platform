@@ -8,7 +8,27 @@ type ConfirmOrderRouteProps = {
   }>;
 };
 
-export async function POST(request: NextRequest, { params }: ConfirmOrderRouteProps) {
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectToOrders(request: NextRequest, message: string) {
+  const url = new URL(`${getBaseUrl(request)}/admin/orders`);
+  url.searchParams.set("message", message);
+  return NextResponse.redirect(url);
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: ConfirmOrderRouteProps
+) {
   await requireRole("ADMIN");
 
   const { id } = await params;
@@ -23,11 +43,7 @@ export async function POST(request: NextRequest, { params }: ConfirmOrderRoutePr
   });
 
   if (!order) {
-    return NextResponse.redirect(new URL("/admin/orders", request.url));
-  }
-
-  if (order.paymentStatus !== "PENDING") {
-    return NextResponse.redirect(new URL("/admin/orders", request.url));
+    return redirectToOrders(request, "not-found");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -51,19 +67,15 @@ export async function POST(request: NextRequest, { params }: ConfirmOrderRoutePr
         },
         update: {
           isActive: true,
-          accessType: "PURCHASE",
-          expiresAt: null,
         },
         create: {
           userId: order.userId,
           courseId: item.courseId,
-          accessType: "PURCHASE",
           isActive: true,
-          expiresAt: null,
         },
       });
     }
   });
 
-  return NextResponse.redirect(new URL("/admin/orders?message=confirmed", request.url));
+  return redirectToOrders(request, "confirmed");
 }
