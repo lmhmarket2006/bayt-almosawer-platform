@@ -34,12 +34,14 @@ export default async function AdminSettingsPage() {
           </Link>
 
           <p className="font-bold text-[var(--brand-500)]">إعدادات المنصة</p>
+
           <h1 className="mt-2 text-3xl font-extrabold">
             بيانات التشغيل والدفع
           </h1>
+
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
-            هذه البيانات ستُستخدم لاحقًا في صفحات الطلبات وتعليمات الدفع
-            والتواصل مع الطلاب.
+            هذه البيانات ستُستخدم في تعليمات الدفع والتواصل مع الطلاب وتجهيز
+            المنصة للاستخدام التجاري الحقيقي.
           </p>
         </section>
 
@@ -53,7 +55,7 @@ export default async function AdminSettingsPage() {
           <div className="grid gap-6">
             <div>
               <h2 className="text-2xl font-extrabold">بيانات المنصة</h2>
-              <p className="mt-2 text-sm text-[var(--text-muted)]">
+              <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
                 البيانات الأساسية التي تظهر في التواصل وتجربة المستخدم.
               </p>
             </div>
@@ -113,9 +115,11 @@ export default async function AdminSettingsPage() {
             </div>
 
             <div className="border-t border-[var(--border-soft)] pt-6">
-              <h2 className="text-2xl font-extrabold">بيانات التحويل البنكي</h2>
-              <p className="mt-2 text-sm text-[var(--text-muted)]">
-                استخدمها في تعليمات الدفع اليدوي للطلاب.
+              <h2 className="text-2xl font-extrabold">
+                بيانات التحويل البنكي
+              </h2>
+              <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
+                هذه البيانات ستظهر لاحقًا للطالب بعد إنشاء طلب الشراء اليدوي.
               </p>
             </div>
 
@@ -155,6 +159,7 @@ export default async function AdminSettingsPage() {
                   dir="ltr"
                   defaultValue={settings.bankAccountNumber ?? ""}
                   className="w-full rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 outline-none transition focus:border-[var(--brand-500)]"
+                  placeholder="رقم الحساب البنكي"
                 />
               </div>
 
@@ -181,7 +186,13 @@ export default async function AdminSettingsPage() {
                 rows={6}
                 defaultValue={settings.orderInstructions ?? ""}
                 className="w-full rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 leading-8 outline-none transition focus:border-[var(--brand-500)]"
+                placeholder="اكتب تعليمات الدفع التي ستظهر للطالب بعد إنشاء الطلب."
               />
+            </div>
+
+            <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 text-sm leading-7 text-[var(--text-muted)]">
+              بعد حفظ هذه البيانات، سنربطها في خطوة لاحقة بصفحة طلبات الطالب
+              حتى تظهر له بيانات التحويل البنكي وتعليمات الدفع بشكل واضح.
             </div>
 
             <button

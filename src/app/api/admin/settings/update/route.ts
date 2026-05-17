@@ -13,6 +13,19 @@ function getBaseUrl(request: NextRequest) {
   return request.nextUrl.origin;
 }
 
+function redirectToSettings(request: NextRequest, query?: string) {
+  const url = new URL(`${getBaseUrl(request)}/admin/settings`);
+
+  if (query) {
+    const params = new URLSearchParams(query);
+    params.forEach((value, key) => {
+      url.searchParams.set(key, value);
+    });
+  }
+
+  return NextResponse.redirect(url);
+}
+
 export async function POST(request: NextRequest) {
   await requireRole("ADMIN");
 
@@ -20,8 +33,14 @@ export async function POST(request: NextRequest) {
 
   const id = String(formData.get("id") || "").trim();
 
+  const siteName = String(formData.get("siteName") || "").trim();
+
+  if (!siteName) {
+    return redirectToSettings(request, "error=missing-site-name");
+  }
+
   const data = {
-    siteName: String(formData.get("siteName") || "").trim(),
+    siteName,
     supportEmail: String(formData.get("supportEmail") || "").trim() || null,
     supportPhone: String(formData.get("supportPhone") || "").trim() || null,
     whatsappNumber: String(formData.get("whatsappNumber") || "").trim() || null,
@@ -35,14 +54,35 @@ export async function POST(request: NextRequest) {
       String(formData.get("orderInstructions") || "").trim() || null,
   };
 
-  if (!data.siteName) {
-    return NextResponse.redirect(`${getBaseUrl(request)}/admin/settings`);
-  }
-
   if (id) {
-    await prisma.platformSettings.update({
+    const existingById = await prisma.platformSettings.findUnique({
       where: {
         id,
+      },
+    });
+
+    if (existingById) {
+      await prisma.platformSettings.update({
+        where: {
+          id,
+        },
+        data,
+      });
+
+      return redirectToSettings(request, "message=saved");
+    }
+  }
+
+  const existingSettings = await prisma.platformSettings.findFirst({
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+
+  if (existingSettings) {
+    await prisma.platformSettings.update({
+      where: {
+        id: existingSettings.id,
       },
       data,
     });
@@ -52,5 +92,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.redirect(`${getBaseUrl(request)}/admin/settings`);
+  return redirectToSettings(request, "message=saved");
 }

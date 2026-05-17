@@ -14,8 +14,14 @@ function getBaseUrl(request: NextRequest) {
   return request.nextUrl.origin;
 }
 
-function redirectToSecurity(request: NextRequest, query: string) {
-  return NextResponse.redirect(`${getBaseUrl(request)}/admin/security?${query}`);
+function redirectToSecurity(request: NextRequest, params: Record<string, string>) {
+  const url = new URL(`${getBaseUrl(request)}/admin/security`);
+
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  return NextResponse.redirect(url);
 }
 
 export async function POST(request: NextRequest) {
@@ -28,15 +34,27 @@ export async function POST(request: NextRequest) {
   const confirmPassword = String(formData.get("confirmPassword") || "");
 
   if (!currentPassword || !newPassword || !confirmPassword) {
-    return redirectToSecurity(request, "error=missing-fields");
+    return redirectToSecurity(request, {
+      error: "missing-fields",
+    });
   }
 
   if (newPassword.length < 8) {
-    return redirectToSecurity(request, "error=password-too-short");
+    return redirectToSecurity(request, {
+      error: "password-too-short",
+    });
   }
 
   if (newPassword !== confirmPassword) {
-    return redirectToSecurity(request, "error=password-mismatch");
+    return redirectToSecurity(request, {
+      error: "password-mismatch",
+    });
+  }
+
+  if (currentPassword === newPassword) {
+    return redirectToSecurity(request, {
+      error: "same-password",
+    });
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -45,8 +63,10 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  if (!dbUser) {
-    return redirectToSecurity(request, "error=missing-fields");
+  if (!dbUser || !dbUser.isActive) {
+    return redirectToSecurity(request, {
+      error: "missing-fields",
+    });
   }
 
   const isCurrentPasswordValid = await bcrypt.compare(
@@ -55,7 +75,9 @@ export async function POST(request: NextRequest) {
   );
 
   if (!isCurrentPasswordValid) {
-    return redirectToSecurity(request, "error=wrong-current-password");
+    return redirectToSecurity(request, {
+      error: "wrong-current-password",
+    });
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 12);
@@ -69,5 +91,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return redirectToSecurity(request, "message=password-updated");
+  return redirectToSecurity(request, {
+    message: "password-updated",
+  });
 }

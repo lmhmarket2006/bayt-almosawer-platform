@@ -22,6 +22,8 @@ function getError(error?: string) {
     "wrong-current-password": "كلمة المرور الحالية غير صحيحة.",
     "password-too-short": "كلمة المرور الجديدة يجب ألا تقل عن 8 أحرف.",
     "password-mismatch": "كلمة المرور الجديدة وتأكيدها غير متطابقين.",
+    "same-password":
+      "كلمة المرور الجديدة يجب أن تكون مختلفة عن كلمة المرور الحالية.",
   };
 
   return error ? errors[error] : null;
@@ -48,11 +50,14 @@ export default async function AdminSecurityPage({
           </Link>
 
           <p className="font-bold text-[var(--brand-500)]">الأمان</p>
+
           <h1 className="mt-2 text-3xl font-extrabold">
             تغيير كلمة مرور الأدمن
           </h1>
+
           <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
-            غيّر كلمة المرور التجريبية إلى كلمة قوية قبل الاستخدام التجاري.
+            غيّر كلمة المرور التجريبية إلى كلمة قوية قبل الاستخدام التجاري
+            الحقيقي للمنصة.
           </p>
         </section>
 
@@ -68,6 +73,15 @@ export default async function AdminSecurityPage({
           </div>
         ) : null}
 
+        <section className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-7 text-amber-800">
+          <p className="font-extrabold">تنبيه مهم</p>
+          <p className="mt-1">
+            استخدم كلمة مرور قوية لا تقل عن 8 أحرف، ويفضل أن تحتوي على حروف
+            كبيرة وصغيرة وأرقام ورموز. بعد تغيير كلمة المرور، استخدم الكلمة
+            الجديدة في تسجيل الدخول القادم.
+          </p>
+        </section>
+
         <form
           action="/api/admin/security/change-password"
           method="POST"
@@ -82,6 +96,7 @@ export default async function AdminSecurityPage({
                 name="currentPassword"
                 type="password"
                 required
+                autoComplete="current-password"
                 className="w-full rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 outline-none transition focus:border-[var(--brand-500)]"
               />
             </div>
@@ -95,6 +110,7 @@ export default async function AdminSecurityPage({
                 type="password"
                 required
                 minLength={8}
+                autoComplete="new-password"
                 className="w-full rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 outline-none transition focus:border-[var(--brand-500)]"
               />
             </div>
@@ -108,6 +124,7 @@ export default async function AdminSecurityPage({
                 type="password"
                 required
                 minLength={8}
+                autoComplete="new-password"
                 className="w-full rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 outline-none transition focus:border-[var(--brand-500)]"
               />
             </div>
