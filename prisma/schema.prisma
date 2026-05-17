@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+  INSTRUCTOR
+}
+
+enum CourseType {
+  RECORDED
+  LIVE
+  IN_PERSON
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REJECTED
+  REFUNDED
+}
+
+enum AccessType {
+  PURCHASE
+  SUBSCRIPTION
+  MANUAL
+}
+
+model User {
+  id           String  @id @default(cuid())
+  name         String
+  email        String  @unique
+  phone        String?
+  passwordHash String
+  role         Role    @default(STUDENT)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdCourses   Course[]         @relation("CourseCreator")
+  orders           Order[]
+  enrollments      Enrollment[]
+  lessonProgresses LessonProgress[]
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses Course[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Course {
+  id          String @id @default(cuid())
+  title       String
+  slug        String @unique
+  subtitle    String?
+  description String @db.Text
+
+  thumbnailUrl  String?
+  promoVideoUrl String?
+
+  courseType CourseType  @default(RECORDED)
+  level      CourseLevel @default(BEGINNER)
+  language   String      @default("ar")
+
+  price     Decimal  @default(0) @db.Decimal(10, 2)
+  salePrice Decimal? @db.Decimal(10, 2)
+
+  isSubscriptionIncluded Boolean @default(false)
+
+  status      CourseStatus @default(DRAFT)
+  isPublished Boolean      @default(false)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User? @relation("CourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sections    CourseSection[]
+  orderItems  OrderItem[]
+  enrollments Enrollment[]
+
+  @@index([categoryId])
+  @@index([createdById])
+  @@index([status])
+  @@index([isPublished])
+  @@index([courseType])
+  @@index([level])
+}
+
+model CourseSection {
+  id        String @id @default(cuid())
+  courseId  String
+  title     String
+  sortOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@index([courseId])
+  @@index([sortOrder])
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  sectionId   String
+  title       String
+  description String? @db.Text
+  videoUrl    String?
+
+  durationMinutes Int     @default(0)
+  isFreePreview   Boolean @default(false)
+  sortOrder       Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  section    CourseSection    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  progresses LessonProgress[]
+
+  @@index([sectionId])
+  @@index([isFreePreview])
+  @@index([sortOrder])
+}
+
+model Order {
+  id     String @id @default(cuid())
+  userId String
+
+  totalAmount    Decimal @default(0) @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  finalAmount    Decimal @default(0) @db.Decimal(10, 2)
+
+  orderStatus   OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  paymentMethod    String? @default("manual")
+  paymentReference String?
+  adminNote        String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id       String @id @default(cuid())
+  orderId  String
+  courseId String
+
+  price           Decimal @default(0) @db.Decimal(10, 2)
+  platformShare   Decimal @default(0) @db.Decimal(10, 2)
+  instructorShare Decimal @default(0) @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([courseId])
+}
+
+model Enrollment {
+  id       String @id @default(cuid())
+  userId   String
+  courseId String
+
+  accessType AccessType @default(PURCHASE)
+  isActive   Boolean    @default(true)
+  startsAt   DateTime   @default(now())
+  expiresAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([isActive])
+}
+
+model LessonProgress {
+  id       String @id @default(cuid())
+  userId   String
+  lessonId String
+
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@index([isCompleted])
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
