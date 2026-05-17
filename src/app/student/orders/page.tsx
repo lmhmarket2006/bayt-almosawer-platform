@@ -12,7 +12,7 @@ function formatPrice(value: unknown) {
   const price = Number(value);
 
   if (!price || price <= 0) {
-    return "مجاني";
+    return "0 ريال";
   }
 
   return `${price.toLocaleString("ar-SA")} ريال`;
@@ -20,8 +20,8 @@ function formatPrice(value: unknown) {
 
 function getPaymentStatusLabel(status: string) {
   const labels: Record<string, string> = {
-    PENDING: "بانتظار الدفع",
-    PAID: "مدفوع",
+    PENDING: "بانتظار تأكيد الدفع",
+    PAID: "مدفوع ومؤكد",
     REJECTED: "مرفوض",
     REFUNDED: "مسترد",
   };
@@ -32,7 +32,7 @@ function getPaymentStatusLabel(status: string) {
 function getOrderStatusLabel(status: string) {
   const labels: Record<string, string> = {
     PENDING: "قيد المراجعة",
-    CONFIRMED: "مؤكد",
+    CONFIRMED: "تم التأكيد",
     CANCELLED: "ملغي",
     REFUNDED: "مسترد",
   };
@@ -43,9 +43,8 @@ function getOrderStatusLabel(status: string) {
 function getMessage(message?: string) {
   const messages: Record<string, string> = {
     created:
-      "تم إنشاء طلب الشراء بنجاح. برجاء تحويل المبلغ ثم انتظار تأكيد الإدارة.",
-    "pending-exists": "لديك طلب شراء قيد المراجعة لهذا الكورس بالفعل.",
-    "already-enrolled": "هذا الكورس مفتوح لك بالفعل.",
+      "تم إنشاء طلبك بنجاح. يرجى تنفيذ التحويل البنكي ثم إرسال إيصال الدفع للإدارة.",
+    "already-pending": "لديك طلب سابق قيد المراجعة لهذا الكورس.",
   };
 
   return message ? messages[message] : null;
@@ -55,30 +54,45 @@ export default async function StudentOrdersPage({
   searchParams,
 }: StudentOrdersPageProps) {
   const user = await requireUser();
-
   const params = await searchParams;
   const message = getMessage(params.message);
 
-  const orders = await prisma.order.findMany({
-    where: {
-      userId: user.id,
-    },
-    include: {
-      items: {
-        include: {
-          course: true,
+  const [orders, settings] = await Promise.all([
+    prisma.order.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        items: {
+          include: {
+            course: true,
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.platformSettings.findFirst({
+      orderBy: {
+        createdAt: "asc",
+      },
+    }),
+  ]);
+
+  const hasPaymentInfo =
+    settings?.bankName ||
+    settings?.bankAccountName ||
+    settings?.bankAccountNumber ||
+    settings?.bankIban ||
+    settings?.orderInstructions ||
+    settings?.whatsappNumber ||
+    settings?.supportPhone;
 
   return (
     <main className="min-h-screen px-5 py-8 sm:px-8 lg:px-20">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 rounded-[2rem] border border-[var(--border-soft)] bg-white p-6 shadow-sm sm:p-8">
+        <section className="mb-8 rounded-[2rem] border border-[var(--border-soft)] bg-white p-6 shadow-sm sm:p-8">
           <Link
             href="/student"
             className="mb-5 inline-flex text-sm font-extrabold text-[var(--brand-600)]"
@@ -86,103 +100,233 @@ export default async function StudentOrdersPage({
             ← العودة للوحة الطالب
           </Link>
 
-          <p className="font-bold text-[var(--brand-500)]">طلبات الطالب</p>
-          <h1 className="mt-2 text-3xl font-extrabold">طلباتي</h1>
-          <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
-            هنا تظهر طلبات شراء الكورسات وحالة الدفع والتأكيد.
+          <p className="font-bold text-[var(--brand-500)]">طلباتي</p>
+
+          <h1 className="mt-2 text-3xl font-extrabold">طلبات شراء الكورسات</h1>
+
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
+            هنا تظهر طلباتك وحالة تأكيد الدفع. إذا كان الطلب بانتظار الدفع،
+            ستجد بيانات التحويل البنكي وتعليمات الدفع في نفس الصفحة.
           </p>
-        </div>
+        </section>
 
         {message ? (
-          <div className="mb-6 rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-4 text-sm font-bold text-[var(--brand-700)] shadow-sm">
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold leading-7 text-green-700">
             {message}
           </div>
         ) : null}
 
         {orders.length === 0 ? (
-          <div className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-8 text-center shadow-sm">
+          <section className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-8 text-center shadow-sm">
             <h2 className="text-2xl font-extrabold">لا توجد طلبات بعد</h2>
-            <p className="mt-3 text-sm text-[var(--text-muted)]">
-              عند شراء كورس سيظهر الطلب هنا.
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[var(--text-muted)]">
+              عند شراء أي كورس، سيظهر طلبك هنا بانتظار مراجعة الإدارة.
             </p>
+
             <Link
               href="/courses"
               className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--brand-700)] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-pink-500/20"
             >
               تصفح الكورسات
             </Link>
-          </div>
+          </section>
         ) : (
-          <div className="space-y-5">
-            {orders.map((order) => (
-              <article
-                key={order.id}
-                className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-6 shadow-sm"
-              >
-                <div className="flex flex-col justify-between gap-4 border-b border-[var(--border-soft)] pb-5 sm:flex-row sm:items-center">
-                  <div>
-                    <p className="text-xs font-bold text-[var(--text-muted)]">
-                      رقم الطلب
-                    </p>
-                    <h2 className="mt-1 text-lg font-extrabold">{order.id}</h2>
-                  </div>
+          <div className="space-y-6">
+            {orders.map((order) => {
+              const isPendingPayment = order.paymentStatus === "PENDING";
 
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[#f7e7f5] px-3 py-1 text-xs font-extrabold text-[var(--brand-500)]">
-                      {getOrderStatusLabel(order.orderStatus)}
-                    </span>
-                    <span className="rounded-full bg-[#f7e7f5] px-3 py-1 text-xs font-extrabold text-[var(--brand-500)]">
-                      {getPaymentStatusLabel(order.paymentStatus)}
-                    </span>
-                  </div>
-                </div>
+              return (
+                <article
+                  key={order.id}
+                  className="overflow-hidden rounded-[2rem] border border-[var(--border-soft)] bg-white shadow-sm"
+                >
+                  <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+                    <div className="p-6 sm:p-8">
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        <span className="rounded-full bg-[#f7e7f5] px-3 py-1 text-xs font-extrabold text-[var(--brand-500)]">
+                          {getOrderStatusLabel(order.orderStatus)}
+                        </span>
 
-                <div className="mt-5 space-y-4">
-                  {order.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-col justify-between gap-3 rounded-2xl bg-[var(--surface-soft)] p-4 sm:flex-row sm:items-center"
-                    >
-                      <div>
-                        <p className="font-extrabold">{item.course.title}</p>
-                        <p className="mt-1 text-sm text-[var(--text-muted)]">
-                          {item.course.subtitle}
+                        <span className="rounded-full bg-[#f7e7f5] px-3 py-1 text-xs font-extrabold text-[var(--brand-500)]">
+                          {getPaymentStatusLabel(order.paymentStatus)}
+                        </span>
+                      </div>
+
+                      <h2 className="text-2xl font-extrabold">
+                        {order.items[0]?.course.title ?? "طلب شراء كورس"}
+                      </h2>
+
+                      <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
+                        تاريخ الطلب:{" "}
+                        {order.createdAt.toLocaleDateString("ar-SA", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+
+                      <div className="mt-5 rounded-[1.5rem] bg-[var(--surface-soft)] p-5">
+                        <p className="text-sm font-bold text-[var(--text-muted)]">
+                          إجمالي الطلب
+                        </p>
+                        <p className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
+                          {formatPrice(order.finalAmount)}
                         </p>
                       </div>
 
-                      <strong className="text-lg text-[var(--brand-900)]">
-                        {formatPrice(item.price)}
-                      </strong>
+                      <div className="mt-5 space-y-3">
+                        {order.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3"
+                          >
+                            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                              <p className="font-bold">{item.course.title}</p>
+                              <p className="text-sm font-extrabold text-[var(--brand-700)]">
+                                {formatPrice(item.price)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {order.paymentStatus === "PAID" ? (
+                        <Link
+                          href="/student/my-courses"
+                          className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--brand-700)] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-pink-500/20 transition hover:-translate-y-0.5"
+                        >
+                          الذهاب إلى كورساتي
+                        </Link>
+                      ) : null}
                     </div>
-                  ))}
-                </div>
 
-                <div className="mt-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                  <p className="text-sm text-[var(--text-muted)]">
-                    تاريخ الطلب:{" "}
-                    {order.createdAt.toLocaleDateString("ar-SA", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+                    <aside className="border-t border-[var(--border-soft)] bg-[var(--surface-soft)] p-6 sm:p-8 lg:border-t-0 lg:border-r">
+                      {isPendingPayment ? (
+                        <div>
+                          <p className="font-bold text-[var(--brand-500)]">
+                            تعليمات الدفع
+                          </p>
 
-                  <strong className="text-xl text-[var(--brand-900)]">
-                    الإجمالي: {formatPrice(order.finalAmount)}
-                  </strong>
-                </div>
+                          <h3 className="mt-2 text-2xl font-extrabold">
+                            بيانات التحويل البنكي
+                          </h3>
 
-                {order.paymentStatus === "PENDING" ? (
-                  <div className="mt-5 rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-4 text-sm leading-7 text-[var(--text-muted)]">
-                    <strong className="text-[var(--brand-900)]">
-                      تعليمات الدفع اليدوي:
-                    </strong>{" "}
-                    حوّل قيمة الكورس على حساب الأكاديمية، ثم تواصل مع الإدارة
-                    لإرسال إيصال التحويل. بعد التأكيد سيتم فتح الكورس لك.
+                          {hasPaymentInfo ? (
+                            <div className="mt-5 space-y-3">
+                              {settings?.bankName ? (
+                                <div className="rounded-2xl bg-white p-4">
+                                  <p className="text-xs font-bold text-[var(--text-muted)]">
+                                    اسم البنك
+                                  </p>
+                                  <p className="mt-1 font-extrabold">
+                                    {settings.bankName}
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {settings?.bankAccountName ? (
+                                <div className="rounded-2xl bg-white p-4">
+                                  <p className="text-xs font-bold text-[var(--text-muted)]">
+                                    اسم صاحب الحساب
+                                  </p>
+                                  <p className="mt-1 font-extrabold">
+                                    {settings.bankAccountName}
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {settings?.bankAccountNumber ? (
+                                <div className="rounded-2xl bg-white p-4">
+                                  <p className="text-xs font-bold text-[var(--text-muted)]">
+                                    رقم الحساب
+                                  </p>
+                                  <p className="mt-1 font-extrabold" dir="ltr">
+                                    {settings.bankAccountNumber}
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {settings?.bankIban ? (
+                                <div className="rounded-2xl bg-white p-4">
+                                  <p className="text-xs font-bold text-[var(--text-muted)]">
+                                    IBAN
+                                  </p>
+                                  <p className="mt-1 break-all font-extrabold" dir="ltr">
+                                    {settings.bankIban}
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {settings?.orderInstructions ? (
+                                <div className="rounded-2xl bg-white p-4">
+                                  <p className="text-xs font-bold text-[var(--text-muted)]">
+                                    التعليمات
+                                  </p>
+                                  <p className="mt-2 whitespace-pre-line text-sm leading-7 text-[var(--text-muted)]">
+                                    {settings.orderInstructions}
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {(settings?.whatsappNumber ||
+                                settings?.supportPhone) ? (
+                                <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4">
+                                  <p className="text-xs font-bold text-[var(--text-muted)]">
+                                    بعد التحويل
+                                  </p>
+                                  <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
+                                    أرسل إيصال التحويل للإدارة لمراجعة الطلب وفتح
+                                    الكورس داخل حسابك.
+                                  </p>
+
+                                  {settings?.whatsappNumber ? (
+                                    <a
+                                      href={`https://wa.me/${settings.whatsappNumber}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="mt-4 block rounded-2xl bg-green-600 px-5 py-3 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5"
+                                    >
+                                      إرسال الإيصال عبر واتساب
+                                    </a>
+                                  ) : null}
+
+                                  {settings?.supportPhone ? (
+                                    <p className="mt-3 text-center text-sm font-bold text-[var(--text-muted)]">
+                                      رقم الدعم:{" "}
+                                      <span dir="ltr">
+                                        {settings.supportPhone}
+                                      </span>
+                                    </p>
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-800">
+                              لم يتم إدخال بيانات التحويل البنكي بعد. يرجى
+                              التواصل مع الإدارة لإتمام الدفع.
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl bg-white p-5">
+                          <p className="font-extrabold">
+                            {order.paymentStatus === "PAID"
+                              ? "تم تأكيد الدفع"
+                              : "حالة الطلب"}
+                          </p>
+                          <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
+                            {order.paymentStatus === "PAID"
+                              ? "تم فتح الكورس داخل حسابك ويمكنك متابعته من صفحة كورساتي."
+                              : "تابع حالة طلبك من هذه الصفحة."}
+                          </p>
+                        </div>
+                      )}
+                    </aside>
                   </div>
-                ) : null}
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </div>
