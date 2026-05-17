@@ -33,19 +33,29 @@ export async function POST(
 
   const { id } = await params;
   const formData = await request.formData();
+
   const courseId = String(formData.get("courseId") || "").trim();
 
   if (!courseId) {
     return redirectToUser(request, id, "missing-course");
   }
 
-  await prisma.enrollment.updateMany({
+  const enrollment = await prisma.enrollment.findUnique({
     where: {
-      userId: id,
-      courseId,
+      userId_courseId: {
+        userId: id,
+        courseId,
+      },
     },
-    data: {
-      isActive: false,
+  });
+
+  if (!enrollment) {
+    return redirectToUser(request, id, "enrollment-not-found");
+  }
+
+  await prisma.enrollment.delete({
+    where: {
+      id: enrollment.id,
     },
   });
 

@@ -52,6 +52,9 @@ export default async function AdminUserDetailsPage({
     },
     include: {
       enrollments: {
+        where: {
+          isActive: true,
+        },
         include: {
           course: true,
         },
@@ -229,8 +232,7 @@ export default async function AdminUserDetailsPage({
                   <div>
                     <p className="font-extrabold">{enrollment.course.title}</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">
-                      {enrollment.isActive ? "مفتوح" : "غير نشط"} —{" "}
-                      {enrollment.createdAt.toLocaleDateString("ar-SA")}
+                      مفتوح — {enrollment.createdAt.toLocaleDateString("ar-SA")}
                     </p>
                   </div>
 
