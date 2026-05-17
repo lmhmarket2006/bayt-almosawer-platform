@@ -3,8 +3,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectTo(request: NextRequest, path: string) {
+  return NextResponse.redirect(`${getBaseUrl(request)}${path}`);
+}
+
 function redirectWithError(request: NextRequest, path: string, message: string) {
-  const url = new URL(path, request.url);
+  const url = new URL(`${getBaseUrl(request)}${path}`);
   url.searchParams.set("error", message);
   return NextResponse.redirect(url);
 }
@@ -14,7 +29,6 @@ export async function POST(request: NextRequest) {
 
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
-  const phone = String(formData.get("phone") || "").trim();
   const password = String(formData.get("password") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
 
@@ -22,7 +36,7 @@ export async function POST(request: NextRequest) {
     return redirectWithError(
       request,
       "/register",
-      "من فضلك أكمل جميع الحقول المطلوبة."
+      "من فضلك أكمل جميع الحقول."
     );
   }
 
@@ -62,9 +76,9 @@ export async function POST(request: NextRequest) {
     data: {
       name,
       email,
-      phone: phone || null,
       passwordHash,
       role: "STUDENT",
+      isActive: true,
     },
   });
 
@@ -75,7 +89,7 @@ export async function POST(request: NextRequest) {
     role: user.role,
   });
 
-  const response = NextResponse.redirect(new URL("/student", request.url));
+  const response = redirectTo(request, "/student");
 
   response.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
