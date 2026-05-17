@@ -3,8 +3,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectTo(request: NextRequest, path: string) {
+  return NextResponse.redirect(`${getBaseUrl(request)}${path}`);
+}
+
 function redirectWithError(request: NextRequest, path: string, message: string) {
-  const url = new URL(path, request.url);
+  const url = new URL(`${getBaseUrl(request)}${path}`);
   url.searchParams.set("error", message);
   return NextResponse.redirect(url);
 }
@@ -48,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   const redirectPath = user.role === "ADMIN" ? "/admin" : "/student";
 
-  const response = NextResponse.redirect(new URL(redirectPath, request.url));
+  const response = redirectTo(request, redirectPath);
 
   response.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,

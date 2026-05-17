@@ -15,9 +15,7 @@ function getBaseUrl(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const response = NextResponse.redirect(`${getBaseUrl(request)}/login`);
 
-  response.cookies.set({
-    name: SESSION_COOKIE_NAME,
-    value: "",
+  response.cookies.set(SESSION_COOKIE_NAME, "", {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
