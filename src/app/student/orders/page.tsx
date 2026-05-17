@@ -50,6 +50,14 @@ function getMessage(message?: string) {
   return message ? messages[message] : null;
 }
 
+function cleanWhatsAppNumber(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  return value.replace(/\D/g, "");
+}
+
 export default async function StudentOrdersPage({
   searchParams,
 }: StudentOrdersPageProps) {
@@ -80,14 +88,17 @@ export default async function StudentOrdersPage({
     }),
   ]);
 
+  const whatsappNumber = cleanWhatsAppNumber(settings?.whatsappNumber);
+
   const hasPaymentInfo =
     settings?.bankName ||
     settings?.bankAccountName ||
     settings?.bankAccountNumber ||
     settings?.bankIban ||
     settings?.orderInstructions ||
-    settings?.whatsappNumber ||
-    settings?.supportPhone;
+    whatsappNumber ||
+    settings?.supportPhone ||
+    settings?.supportEmail;
 
   return (
     <main className="min-h-screen px-5 py-8 sm:px-8 lg:px-20">
@@ -102,11 +113,13 @@ export default async function StudentOrdersPage({
 
           <p className="font-bold text-[var(--brand-500)]">طلباتي</p>
 
-          <h1 className="mt-2 text-3xl font-extrabold">طلبات شراء الكورسات</h1>
+          <h1 className="mt-2 text-3xl font-extrabold">
+            طلبات شراء الكورسات
+          </h1>
 
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
             هنا تظهر طلباتك وحالة تأكيد الدفع. إذا كان الطلب بانتظار الدفع،
-            ستجد بيانات التحويل البنكي وتعليمات الدفع في نفس الصفحة.
+            ستجد بيانات التحويل البنكي وتعليمات إرسال الإيصال في نفس الصفحة.
           </p>
         </section>
 
@@ -134,6 +147,12 @@ export default async function StudentOrdersPage({
           <div className="space-y-6">
             {orders.map((order) => {
               const isPendingPayment = order.paymentStatus === "PENDING";
+              const firstCourseTitle =
+                order.items[0]?.course.title ?? "طلب شراء كورس";
+
+              const whatsappMessage = encodeURIComponent(
+                `السلام عليكم، أرسلت إيصال تحويل لطلب شراء كورس: ${firstCourseTitle}\nرقم الطلب: ${order.id}\nالمبلغ: ${formatPrice(order.finalAmount)}\nالاسم: ${user.name}\nالبريد: ${user.email}`
+              );
 
               return (
                 <article
@@ -153,7 +172,7 @@ export default async function StudentOrdersPage({
                       </div>
 
                       <h2 className="text-2xl font-extrabold">
-                        {order.items[0]?.course.title ?? "طلب شراء كورس"}
+                        {firstCourseTitle}
                       </h2>
 
                       <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
@@ -251,7 +270,10 @@ export default async function StudentOrdersPage({
                                   <p className="text-xs font-bold text-[var(--text-muted)]">
                                     IBAN
                                   </p>
-                                  <p className="mt-1 break-all font-extrabold" dir="ltr">
+                                  <p
+                                    className="mt-1 break-all font-extrabold"
+                                    dir="ltr"
+                                  >
                                     {settings.bankIban}
                                   </p>
                                 </div>
@@ -268,38 +290,44 @@ export default async function StudentOrdersPage({
                                 </div>
                               ) : null}
 
-                              {(settings?.whatsappNumber ||
-                                settings?.supportPhone) ? (
-                                <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4">
-                                  <p className="text-xs font-bold text-[var(--text-muted)]">
-                                    بعد التحويل
-                                  </p>
-                                  <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
-                                    أرسل إيصال التحويل للإدارة لمراجعة الطلب وفتح
-                                    الكورس داخل حسابك.
-                                  </p>
+                              <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4">
+                                <p className="text-xs font-bold text-[var(--text-muted)]">
+                                  بعد التحويل
+                                </p>
+                                <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">
+                                  أرسل إيصال التحويل للإدارة لمراجعة الطلب وفتح
+                                  الكورس داخل حسابك.
+                                </p>
 
-                                  {settings?.whatsappNumber ? (
-                                    <a
-                                      href={`https://wa.me/${settings.whatsappNumber}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="mt-4 block rounded-2xl bg-green-600 px-5 py-3 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5"
-                                    >
-                                      إرسال الإيصال عبر واتساب
-                                    </a>
-                                  ) : null}
+                                {whatsappNumber ? (
+                                  <a
+                                    href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-4 block rounded-2xl bg-green-600 px-5 py-3 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5"
+                                  >
+                                    إرسال الإيصال عبر واتساب
+                                  </a>
+                                ) : null}
 
-                                  {settings?.supportPhone ? (
-                                    <p className="mt-3 text-center text-sm font-bold text-[var(--text-muted)]">
-                                      رقم الدعم:{" "}
-                                      <span dir="ltr">
-                                        {settings.supportPhone}
-                                      </span>
-                                    </p>
-                                  ) : null}
-                                </div>
-                              ) : null}
+                                {settings?.supportPhone ? (
+                                  <p className="mt-3 text-center text-sm font-bold text-[var(--text-muted)]">
+                                    رقم الدعم:{" "}
+                                    <span dir="ltr">
+                                      {settings.supportPhone}
+                                    </span>
+                                  </p>
+                                ) : null}
+
+                                {settings?.supportEmail ? (
+                                  <p className="mt-2 text-center text-sm font-bold text-[var(--text-muted)]">
+                                    البريد:{" "}
+                                    <span dir="ltr">
+                                      {settings.supportEmail}
+                                    </span>
+                                  </p>
+                                ) : null}
+                              </div>
                             </div>
                           ) : (
                             <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-800">
