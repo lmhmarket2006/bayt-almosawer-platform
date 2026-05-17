@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 
-export async function POST(request: NextRequest) {
-  const response = NextResponse.redirect(new URL("/login", request.url));
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
 
-  response.cookies.set(SESSION_COOKIE_NAME, "", {
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+export async function POST(request: NextRequest) {
+  const response = NextResponse.redirect(`${getBaseUrl(request)}/login`);
+
+  response.cookies.set({
+    name: SESSION_COOKIE_NAME,
+    value: "",
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
