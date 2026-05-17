@@ -1,39 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
+
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
 
 function redirectTo(request: NextRequest, path: string) {
-  return NextResponse.redirect(new URL(path, request.url));
+  return NextResponse.redirect(`${getBaseUrl(request)}${path}`);
+}
+
+function redirectWithQuery(
+  request: NextRequest,
+  path: string,
+  params: Record<string, string>
+) {
+  const url = new URL(`${getBaseUrl(request)}${path}`);
+
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  return NextResponse.redirect(url);
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return redirectTo(request, "/login");
-  }
-
-  if (user.role !== "STUDENT") {
-    return redirectTo(request, "/courses");
-  }
+  const user = await requireUser();
 
   const formData = await request.formData();
   const courseId = String(formData.get("courseId") || "").trim();
 
   if (!courseId) {
-    return redirectTo(request, "/courses");
+    return redirectWithQuery(request, "/courses", {
+      error: "missing-course",
+    });
   }
 
-  const course = await prisma.course.findFirst({
+  const course = await prisma.course.findUnique({
     where: {
       id: courseId,
-      isPublished: true,
-      status: "PUBLISHED",
     },
   });
 
-  if (!course) {
-    return redirectTo(request, "/courses");
+  if (!course || !course.isPublished || course.status !== "PUBLISHED") {
+    return redirectWithQuery(request, "/courses", {
+      error: "course-not-available",
+    });
   }
 
   const existingEnrollment = await prisma.enrollment.findUnique({
@@ -46,7 +65,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (existingEnrollment?.isActive) {
-    return redirectTo(request, "/student/orders?message=already-enrolled");
+    return redirectTo(request, `/learn/${course.slug}`);
   }
 
   const existingPendingOrder = await prisma.order.findFirst({
@@ -62,30 +81,30 @@ export async function POST(request: NextRequest) {
   });
 
   if (existingPendingOrder) {
-    return redirectTo(request, "/student/orders?message=pending-exists");
+    return redirectWithQuery(request, "/student/orders", {
+      message: "already-pending",
+    });
   }
 
-  const finalPrice = course.salePrice ?? course.price;
+  const amount = course.salePrice ?? course.price;
 
   await prisma.order.create({
     data: {
       userId: user.id,
-      totalAmount: finalPrice,
-      discountAmount: 0,
-      finalAmount: finalPrice,
-      orderStatus: "PENDING",
+      totalAmount: amount,
+      finalAmount: amount,
       paymentStatus: "PENDING",
-      paymentMethod: "manual",
+      orderStatus: "PENDING",
       items: {
         create: {
           courseId: course.id,
-          price: finalPrice,
-          platformShare: finalPrice,
-          instructorShare: 0,
+          price: amount,
         },
       },
     },
   });
 
-  return redirectTo(request, "/student/orders?message=created");
+  return redirectWithQuery(request, "/student/orders", {
+    message: "created",
+  });
 }
