@@ -193,6 +193,13 @@ export default async function AdminDashboardPage() {
                 </Link>
 
                 <Link
+                  href="/admin/users"
+                  className="rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5"
+                >
+                  إدارة المستخدمين
+                </Link>
+
+                <Link
                   href="/courses"
                   className="rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5"
                 >
@@ -370,6 +377,16 @@ export default async function AdminDashboardPage() {
 
             <div className="grid gap-3">
               <Link
+                href="/admin/users"
+                className="rounded-[1.25rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <p className="font-extrabold">إدارة المستخدمين</p>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  تابع الطلاب والحسابات وافتح الكورسات يدويًا.
+                </p>
+              </Link>
+
+              <Link
                 href="/admin/settings"
                 className="rounded-[1.25rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
               >
@@ -443,6 +460,13 @@ export default async function AdminDashboardPage() {
                   الحسابات الجديدة
                 </h2>
               </div>
+
+              <Link
+                href="/admin/users"
+                className="hidden text-sm font-extrabold text-[var(--brand-600)] sm:inline-flex"
+              >
+                إدارة المستخدمين ←
+              </Link>
             </div>
 
             {latestUsers.length === 0 ? (
@@ -473,6 +497,13 @@ export default async function AdminDashboardPage() {
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--brand-600)]">
                         {latestUser.isActive ? "نشط" : "موقوف"}
                       </span>
+
+                      <Link
+                        href={`/admin/users/${latestUser.id}`}
+                        className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--brand-900)] transition hover:-translate-y-0.5"
+                      >
+                        التفاصيل
+                      </Link>
                     </div>
                   </div>
                 ))}
