@@ -49,9 +49,11 @@ function getMessage(message?: string) {
     "course-published": "تم نشر الكورس وإظهاره للطلاب.",
     "course-hidden": "تم إخفاء الكورس من الواجهة العامة.",
     "course-archived": "تم أرشفة الكورس وإخفاؤه من الواجهة العامة.",
+    "course-unarchived": "تمت استعادة الكورس من الأرشيف وأصبح مسودة مخفية.",
     "course-deleted": "تم حذف الكورس نهائيًا.",
     "use-delete-button": "استخدم زر الحذف من لوحة الإدارة.",
     "use-archive-button": "استخدم زر الأرشفة من لوحة الإدارة.",
+    "use-unarchive-button": "استخدم زر استعادة الكورس من لوحة الإدارة.",
   };
 
   return message ? messages[message] : null;
@@ -64,6 +66,7 @@ function getError(error?: string) {
       "لا يمكن حذف هذا الكورس نهائيًا لأنه يحتوي على طلبات أو طلاب مسجلين. يمكنك أرشفته بدلًا من الحذف.",
     "delete-failed": "حدث خطأ أثناء حذف الكورس.",
     "archive-failed": "حدث خطأ أثناء أرشفة الكورس.",
+    "unarchive-failed": "حدث خطأ أثناء استعادة الكورس من الأرشيف.",
   };
 
   return error ? errors[error] : null;
@@ -391,7 +394,19 @@ export default async function AdminCoursesPage({
                             أرشفة
                           </button>
                         </form>
-                      ) : null}
+                      ) : (
+                        <form
+                          action={`/api/admin/courses/${course.id}/unarchive`}
+                          method="POST"
+                        >
+                          <button
+                            type="submit"
+                            className="w-full rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-extrabold text-green-700 transition hover:-translate-y-0.5"
+                          >
+                            استعادة من الأرشيف
+                          </button>
+                        </form>
+                      )}
 
                       <form
                         action={`/api/admin/courses/${course.id}/delete`}
