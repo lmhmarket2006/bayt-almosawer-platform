@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getPlatformSettings } from "@/lib/platform-settings";
 
 function formatPrice(value: unknown) {
   const price = Number(value);
@@ -47,6 +48,8 @@ function getCourseStatusLabel(status: string) {
 
 export default async function AdminDashboardPage() {
   const user = await requireRole("ADMIN");
+  const settings = await getPlatformSettings();
+  const siteName = settings.siteName || "منصة بيت المصور التعليمية";
 
   const [
     usersCount,
@@ -173,8 +176,8 @@ export default async function AdminDashboardPage() {
               </h1>
 
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
-                هذه لوحة تشغيل منصة بيت المصور التعليمية. تابع المبيعات،
-                الطلبات، الطلاب، الكورسات، وحالة المحتوى من مكان واحد.
+                هذه لوحة تشغيل {siteName}. تابع المبيعات، الطلبات، الطلاب،
+                الكورسات، وحالة المحتوى من مكان واحد.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
