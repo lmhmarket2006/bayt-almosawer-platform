@@ -1,16 +1,34 @@
+import { CourseStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 
-type TogglePublishRouteProps = {
+type TogglePublishCourseRouteProps = {
   params: Promise<{
     id: string;
   }>;
 };
 
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectToCourses(request: NextRequest, message: string) {
+  const url = new URL(`${getBaseUrl(request)}/admin/courses`);
+  url.searchParams.set("message", message);
+  return NextResponse.redirect(url);
+}
+
 export async function POST(
   request: NextRequest,
-  { params }: TogglePublishRouteProps
+  { params }: TogglePublishCourseRouteProps
 ) {
   await requireRole("ADMIN");
 
@@ -23,20 +41,23 @@ export async function POST(
   });
 
   if (!course) {
-    return NextResponse.redirect(new URL("/admin/courses", request.url));
+    return redirectToCourses(request, "course-not-found");
   }
 
   const nextIsPublished = !course.isPublished;
 
   await prisma.course.update({
     where: {
-      id,
+      id: course.id,
     },
     data: {
       isPublished: nextIsPublished,
-      status: nextIsPublished ? "PUBLISHED" : "DRAFT",
+      status: nextIsPublished ? CourseStatus.PUBLISHED : CourseStatus.DRAFT,
     },
   });
 
-  return NextResponse.redirect(new URL("/admin/courses", request.url));
+  return redirectToCourses(
+    request,
+    nextIsPublished ? "course-published" : "course-hidden"
+  );
 }
