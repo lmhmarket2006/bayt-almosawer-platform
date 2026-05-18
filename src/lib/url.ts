@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-type UrlParams = Record<string, string | number | boolean | null | undefined>;
-
 export function getBaseUrl(request: NextRequest) {
   const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
 
   if (forwardedHost) {
-    return `${forwardedProto || "https"}://${forwardedHost}`;
-  }
-
-  const host = request.headers.get("host");
-
-  if (host) {
-    const proto =
-      host.includes("localhost") || host.includes("127.0.0.1")
-        ? "http"
-        : "https";
-
-    return `${proto}://${host}`;
+    return `${forwardedProto}://${forwardedHost}`;
   }
 
   return request.nextUrl.origin;
@@ -27,7 +14,7 @@ export function getBaseUrl(request: NextRequest) {
 export function createAppUrl(
   request: NextRequest,
   path: string,
-  params?: UrlParams
+  params?: Record<string, string | number | boolean | null | undefined>
 ) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = new URL(`${getBaseUrl(request)}${normalizedPath}`);
@@ -46,7 +33,7 @@ export function createAppUrl(
 export function redirectTo(
   request: NextRequest,
   path: string,
-  params?: UrlParams
+  params?: Record<string, string | number | boolean | null | undefined>
 ) {
   return NextResponse.redirect(createAppUrl(request, path, params));
 }
@@ -71,45 +58,6 @@ export function redirectWithError(
   });
 }
 
-/**
- * Auth redirects
- */
-export function redirectToLogin(
-  request: NextRequest,
-  error?: string
-) {
-  return error
-    ? redirectWithError(request, "/login", error)
-    : redirectTo(request, "/login");
-}
-
-export function redirectToRegister(
-  request: NextRequest,
-  error?: string
-) {
-  return error
-    ? redirectWithError(request, "/register", error)
-    : redirectTo(request, "/register");
-}
-
-export function redirectToStudent(request: NextRequest) {
-  return redirectTo(request, "/student");
-}
-
-export function redirectToStudentOrders(
-  request: NextRequest,
-  message = "updated"
-) {
-  return redirectWithMessage(request, "/student/orders", message);
-}
-
-export function redirectToStudentMyCourses(request: NextRequest) {
-  return redirectTo(request, "/student/my-courses");
-}
-
-/**
- * Admin course redirects
- */
 export function redirectToAdminCourses(
   request: NextRequest,
   message = "updated"
@@ -144,24 +92,14 @@ export function redirectToAdminCourseCurriculum(
   );
 }
 
-/**
- * Admin lesson redirects
- */
 export function redirectToAdminLessonEdit(
   request: NextRequest,
   lessonId: string,
   message = "updated"
 ) {
-  return redirectWithMessage(
-    request,
-    `/admin/lessons/${lessonId}/edit`,
-    message
-  );
+  return redirectWithMessage(request, `/admin/lessons/${lessonId}/edit`, message);
 }
 
-/**
- * Admin order redirects
- */
 export function redirectToAdminOrders(
   request: NextRequest,
   message = "updated"
@@ -169,9 +107,6 @@ export function redirectToAdminOrders(
   return redirectWithMessage(request, "/admin/orders", message);
 }
 
-/**
- * Admin user redirects
- */
 export function redirectToAdminUser(
   request: NextRequest,
   userId: string,
@@ -185,28 +120,4 @@ export function redirectToAdminUsers(
   message = "updated"
 ) {
   return redirectWithMessage(request, "/admin/users", message);
-}
-
-/**
- * Admin settings/security redirects
- */
-export function redirectToAdminSettings(
-  request: NextRequest,
-  message = "saved"
-) {
-  return redirectWithMessage(request, "/admin/settings", message);
-}
-
-export function redirectToAdminSettingsError(
-  request: NextRequest,
-  error = "error"
-) {
-  return redirectWithError(request, "/admin/settings", error);
-}
-
-export function redirectToAdminSecurity(
-  request: NextRequest,
-  params?: UrlParams
-) {
-  return redirectTo(request, "/admin/security", params);
 }

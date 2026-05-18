@@ -1,4 +1,4 @@
-import { CourseLevel, CourseStatus, CourseType } from "@prisma/client";
+import { CourseLevel, CourseStatus, CourseType, Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
@@ -34,88 +34,153 @@ function createSlug(value: string) {
     .replace(/^-|-$/g, "");
 }
 
-export async function POST(
+function parseMoney(value: FormDataEntryValue | null) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return 0;
+  }
+
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+    return null;
+  }
+
+  return parsedValue;
+}
+
+function getNullableText(value: FormDataEntryValue | null) {
+  const text = String(value || "").trim();
+
+  return text || null;
+}
+
+// لو تم فتح الرابط مباشرة من المتصفح
+export async function GET(
   request: NextRequest,
   { params }: UpdateCourseRouteProps
 ) {
   await requireRole("ADMIN");
 
   const { id } = await params;
-  const formData = await request.formData();
 
-  const title = String(formData.get("title") || "").trim();
-  const slugInput = String(formData.get("slug") || "").trim();
-  const subtitle = String(formData.get("subtitle") || "").trim() || null;
-  const description = String(formData.get("description") || "").trim();
+  return redirectToAdminCourseEdit(request, id, "use-edit-form");
+}
 
-  const thumbnailUrl =
-    String(formData.get("thumbnailUrl") || "").trim() || null;
+export async function POST(
+  request: NextRequest,
+  { params }: UpdateCourseRouteProps
+) {
+  const { id } = await params;
 
-  const promoVideoUrl =
-    String(formData.get("promoVideoUrl") || "").trim() || null;
+  try {
+    await requireRole("ADMIN");
 
-  const courseType = getCourseType(String(formData.get("courseType") || ""));
-  const level = getCourseLevel(String(formData.get("level") || ""));
-  const language = String(formData.get("language") || "ar").trim() || "ar";
+    const formData = await request.formData();
 
-  const price = Number(formData.get("price") || 0);
-  const salePriceValue = String(formData.get("salePrice") || "").trim();
+    const title = String(formData.get("title") || "").trim();
+    const slugInput = String(formData.get("slug") || "").trim();
+    const subtitle = getNullableText(formData.get("subtitle"));
+    const description = String(formData.get("description") || "").trim();
 
-  const isPublished = formData.get("isPublished") === "true";
+    const thumbnailUrl = getNullableText(formData.get("thumbnailUrl"));
+    const promoVideoUrl = getNullableText(formData.get("promoVideoUrl"));
 
-  const course = await prisma.course.findUnique({
-    where: {
-      id,
-    },
-  });
+    const courseType = getCourseType(String(formData.get("courseType") || ""));
+    const level = getCourseLevel(String(formData.get("level") || ""));
+    const language = String(formData.get("language") || "ar").trim() || "ar";
 
-  if (!course) {
-    return redirectToAdminCourses(request, "course-not-found");
-  }
+    const price = parseMoney(formData.get("price"));
+    const salePrice = formData.get("salePrice")
+      ? parseMoney(formData.get("salePrice"))
+      : null;
 
-  if (!title || !description) {
-    return redirectToAdminCourseEdit(request, id, "missing-required-fields");
-  }
+    const isPublished = formData.get("isPublished") === "true";
 
-  const slug = createSlug(slugInput || title);
-
-  if (!slug) {
-    return redirectToAdminCourseEdit(request, id, "invalid-slug");
-  }
-
-  const existingCourse = await prisma.course.findFirst({
-    where: {
-      slug,
-      NOT: {
+    const course = await prisma.course.findUnique({
+      where: {
         id,
       },
-    },
-  });
+      select: {
+        id: true,
+      },
+    });
 
-  if (existingCourse) {
-    return redirectToAdminCourseEdit(request, id, "slug-exists");
+    if (!course) {
+      return redirectToAdminCourses(request, "course-not-found");
+    }
+
+    if (!title || !description) {
+      return redirectToAdminCourseEdit(request, id, "missing-required-fields");
+    }
+
+    if (price === null || salePrice === null) {
+      return redirectToAdminCourseEdit(request, id, "invalid-price");
+    }
+
+    if (salePrice !== null && salePrice > price) {
+      return redirectToAdminCourseEdit(
+        request,
+        id,
+        "sale-price-greater-than-price"
+      );
+    }
+
+    const slug = createSlug(slugInput || title);
+
+    if (!slug) {
+      return redirectToAdminCourseEdit(request, id, "invalid-slug");
+    }
+
+    const existingCourse = await prisma.course.findFirst({
+      where: {
+        slug,
+        NOT: {
+          id,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingCourse) {
+      return redirectToAdminCourseEdit(request, id, "slug-exists");
+    }
+
+    await prisma.course.update({
+      where: {
+        id,
+      },
+      data: {
+        title,
+        slug,
+        subtitle,
+        description,
+        thumbnailUrl,
+        promoVideoUrl,
+        courseType,
+        level,
+        language,
+        price,
+        salePrice,
+        isPublished,
+        status: isPublished ? CourseStatus.PUBLISHED : CourseStatus.DRAFT,
+      },
+    });
+
+    return redirectToAdminCourses(request, "course-updated");
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return redirectToAdminCourseEdit(request, id, "slug-exists");
+    }
+
+    console.error("Update course error:", error);
+
+    return redirectToAdminCourseEdit(request, id, "update-course-failed");
   }
-
-  await prisma.course.update({
-    where: {
-      id,
-    },
-    data: {
-      title,
-      slug,
-      subtitle,
-      description,
-      thumbnailUrl,
-      promoVideoUrl,
-      courseType,
-      level,
-      language,
-      price: Number.isFinite(price) ? price : 0,
-      salePrice: salePriceValue ? Number(salePriceValue) : null,
-      isPublished,
-      status: isPublished ? CourseStatus.PUBLISHED : CourseStatus.DRAFT,
-    },
-  });
-
-  return redirectToAdminCourses(request, "course-updated");
 }
