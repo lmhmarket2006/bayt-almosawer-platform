@@ -8,14 +8,40 @@ type UpdateLessonRouteProps = {
   }>;
 };
 
-function toNumber(value: FormDataEntryValue | null) {
-  const number = Number(value);
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
 
-  if (Number.isNaN(number) || number < 0) {
-    return 0;
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
   }
 
-  return number;
+  return request.nextUrl.origin;
+}
+
+function redirectToLessonEdit(
+  request: NextRequest,
+  lessonId: string,
+  message: string
+) {
+  const url = new URL(`${getBaseUrl(request)}/admin/lessons/${lessonId}/edit`);
+  url.searchParams.set("message", message);
+
+  return NextResponse.redirect(url);
+}
+
+function redirectToCurriculum(
+  request: NextRequest,
+  courseId: string,
+  message: string
+) {
+  const url = new URL(
+    `${getBaseUrl(request)}/admin/courses/${courseId}/curriculum`
+  );
+
+  url.searchParams.set("message", message);
+
+  return NextResponse.redirect(url);
 }
 
 export async function POST(
@@ -28,10 +54,10 @@ export async function POST(
   const formData = await request.formData();
 
   const title = String(formData.get("title") || "").trim();
-  const description = String(formData.get("description") || "").trim();
-  const videoUrl = String(formData.get("videoUrl") || "").trim();
-  const durationMinutes = toNumber(formData.get("durationMinutes"));
-  const sortOrder = toNumber(formData.get("sortOrder"));
+  const description = String(formData.get("description") || "").trim() || null;
+  const videoUrl = String(formData.get("videoUrl") || "").trim() || null;
+  const durationMinutes = Number(formData.get("durationMinutes") || 0);
+  const sortOrder = Number(formData.get("sortOrder") || 0);
   const isFreePreview = formData.get("isFreePreview") === "true";
 
   const lesson = await prisma.lesson.findUnique({
@@ -39,35 +65,39 @@ export async function POST(
       id,
     },
     include: {
-      section: true,
+      section: {
+        select: {
+          courseId: true,
+        },
+      },
     },
   });
 
   if (!lesson) {
-    return NextResponse.redirect(new URL("/admin/courses", request.url));
+    return NextResponse.redirect(`${getBaseUrl(request)}/admin/courses`);
   }
 
   if (!title) {
-    return NextResponse.redirect(
-      new URL(`/admin/lessons/${lesson.id}/edit`, request.url)
-    );
+    return redirectToLessonEdit(request, id, "title-required");
   }
 
   await prisma.lesson.update({
     where: {
-      id: lesson.id,
+      id,
     },
     data: {
       title,
-      description: description || null,
-      videoUrl: videoUrl || null,
-      durationMinutes,
-      sortOrder,
+      description,
+      videoUrl,
+      durationMinutes: Number.isFinite(durationMinutes) ? durationMinutes : 0,
+      sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0,
       isFreePreview,
     },
   });
 
-  return NextResponse.redirect(
-    new URL(`/admin/courses/${lesson.section.courseId}/curriculum`, request.url)
+  return redirectToCurriculum(
+    request,
+    lesson.section.courseId,
+    "lesson-updated"
   );
 }
