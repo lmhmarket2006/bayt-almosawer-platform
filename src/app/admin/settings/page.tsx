@@ -1,9 +1,25 @@
 import Link from "next/link";
+import { AdminAlert } from "@/components/AdminAlert";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getAdminError, getAdminMessage } from "@/lib/admin-messages";
 
-export default async function AdminSettingsPage() {
+type AdminSettingsPageProps = {
+  searchParams: Promise<{
+    message?: string;
+    error?: string;
+  }>;
+};
+
+export default async function AdminSettingsPage({
+  searchParams,
+}: AdminSettingsPageProps) {
   await requireRole("ADMIN");
+
+  const params = await searchParams;
+
+  const message = getAdminMessage(params.message);
+  const error = getAdminError(params.error);
 
   const settings =
     (await prisma.platformSettings.findFirst()) ??
@@ -44,6 +60,9 @@ export default async function AdminSettingsPage() {
             المنصة للاستخدام التجاري الحقيقي.
           </p>
         </section>
+
+        {message ? <AdminAlert type="success">{message}</AdminAlert> : null}
+        {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
 
         <form
           action="/api/admin/settings/update"
@@ -191,8 +210,8 @@ export default async function AdminSettingsPage() {
             </div>
 
             <div className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 text-sm leading-7 text-[var(--text-muted)]">
-              بعد حفظ هذه البيانات، سنربطها في خطوة لاحقة بصفحة طلبات الطالب
-              حتى تظهر له بيانات التحويل البنكي وتعليمات الدفع بشكل واضح.
+              بعد حفظ هذه البيانات، ستظهر للطالب داخل صفحة الطلبات عند إنشاء طلب
+              شراء يدوي، مع إمكانية التواصل عبر واتساب لإرسال إيصال التحويل.
             </div>
 
             <button
