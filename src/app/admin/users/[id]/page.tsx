@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminAlert } from "@/components/AdminAlert";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getAdminError, getAdminMessage } from "@/lib/admin-messages";
 
 type AdminUserDetailsPageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    message?: string;
+    error?: string;
   }>;
 };
 
@@ -41,10 +47,15 @@ function getPaymentStatusLabel(status: string) {
 
 export default async function AdminUserDetailsPage({
   params,
+  searchParams,
 }: AdminUserDetailsPageProps) {
   await requireRole("ADMIN");
 
   const { id } = await params;
+  const query = await searchParams;
+
+  const message = getAdminMessage(query.message);
+  const error = getAdminError(query.error);
 
   const user = await prisma.user.findUnique({
     where: {
@@ -139,6 +150,9 @@ export default async function AdminUserDetailsPage({
             </form>
           </div>
         </section>
+
+        {message ? <AdminAlert type="success">{message}</AdminAlert> : null}
+        {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
 
         <section className="mb-8 grid gap-5 md:grid-cols-4">
           <div className="rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-5 shadow-sm">
