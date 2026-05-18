@@ -1,30 +1,8 @@
 import { CourseLevel, CourseStatus, CourseType } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
-
-function getBaseUrl(request: NextRequest) {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
-
-  if (forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
-  return request.nextUrl.origin;
-}
-
-function redirectToCourses(request: NextRequest, message: string) {
-  const url = new URL(`${getBaseUrl(request)}/admin/courses`);
-  url.searchParams.set("message", message);
-  return NextResponse.redirect(url);
-}
-
-function redirectToNewCourse(request: NextRequest, message: string) {
-  const url = new URL(`${getBaseUrl(request)}/admin/courses/new`);
-  url.searchParams.set("error", message);
-  return NextResponse.redirect(url);
-}
+import { redirectToAdminCourses, redirectToAdminCourseNew } from "@/lib/url";
 
 function getCourseType(value: string): CourseType {
   if (value === "LIVE") return CourseType.LIVE;
@@ -59,8 +37,10 @@ export async function POST(request: NextRequest) {
   const slugInput = String(formData.get("slug") || "").trim();
   const subtitle = String(formData.get("subtitle") || "").trim() || null;
   const description = String(formData.get("description") || "").trim();
+
   const thumbnailUrl =
     String(formData.get("thumbnailUrl") || "").trim() || null;
+
   const promoVideoUrl =
     String(formData.get("promoVideoUrl") || "").trim() || null;
 
@@ -74,13 +54,13 @@ export async function POST(request: NextRequest) {
   const isPublished = formData.get("isPublished") === "true";
 
   if (!title || !description) {
-    return redirectToNewCourse(request, "missing-required-fields");
+    return redirectToAdminCourseNew(request, "missing-required-fields");
   }
 
   const slug = createSlug(slugInput || title);
 
   if (!slug) {
-    return redirectToNewCourse(request, "invalid-slug");
+    return redirectToAdminCourseNew(request, "invalid-slug");
   }
 
   const existingCourse = await prisma.course.findUnique({
@@ -90,7 +70,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (existingCourse) {
-    return redirectToNewCourse(request, "slug-exists");
+    return redirectToAdminCourseNew(request, "slug-exists");
   }
 
   await prisma.course.create({
@@ -112,5 +92,5 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return redirectToCourses(request, "course-created");
+  return redirectToAdminCourses(request, "course-created");
 }

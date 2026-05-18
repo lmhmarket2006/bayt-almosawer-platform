@@ -1,7 +1,8 @@
 import { CourseStatus } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { redirectToAdminCourses } from "@/lib/url";
 
 type DeleteCourseRouteProps = {
   params: Promise<{
@@ -9,27 +10,11 @@ type DeleteCourseRouteProps = {
   }>;
 };
 
-function getBaseUrl(request: NextRequest) {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
-
-  if (forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
-  return request.nextUrl.origin;
-}
-
-function redirectToCourses(request: NextRequest, message: string) {
-  const url = new URL(`${getBaseUrl(request)}/admin/courses`);
-  url.searchParams.set("message", message);
-  return NextResponse.redirect(url);
-}
-
 // لو فتحت رابط API مباشرة في المتصفح
 export async function GET(request: NextRequest) {
   await requireRole("ADMIN");
-  return redirectToCourses(request, "use-delete-button");
+
+  return redirectToAdminCourses(request, "use-delete-button");
 }
 
 export async function POST(
@@ -58,7 +43,7 @@ export async function POST(
   });
 
   if (!course) {
-    return redirectToCourses(request, "course-not-found");
+    return redirectToAdminCourses(request, "course-not-found");
   }
 
   const hasCommercialData =
@@ -76,7 +61,7 @@ export async function POST(
       },
     });
 
-    return redirectToCourses(request, "course-archived");
+    return redirectToAdminCourses(request, "course-archived");
   }
 
   await prisma.course.delete({
@@ -85,5 +70,5 @@ export async function POST(
     },
   });
 
-  return redirectToCourses(request, "course-deleted");
+  return redirectToAdminCourses(request, "course-deleted");
 }
