@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getPlatformSettings() {
-  const settings = await prisma.platformSettings.findFirst();
+  const settings = await prisma.platformSettings.findFirst({
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
 
   if (settings) {
     return settings;
