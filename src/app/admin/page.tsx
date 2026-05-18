@@ -171,14 +171,11 @@ export default async function AdminDashboardPage() {
                 لوحة الإدارة
               </p>
 
-              <h1 className="mt-2 text-3xl font-extrabold leading-tight sm:text-4xl">
-                مرحبًا، {user.name}
-              </h1>
-
+<h1 className="mt-2 text-3xl font-extrabold leading-tight sm:text-4xl">
+  مرحبًا بك في لوحة إدارة {siteName}
+</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
-                هذه لوحة تشغيل {siteName}. تابع المبيعات، الطلبات، الطلاب،
-                الكورسات، وحالة المحتوى من مكان واحد.
-              </p>
+تابع المبيعات، الطلبات، الطلاب، الكورسات، وحالة المحتوى من مكان واحد.              </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Link
