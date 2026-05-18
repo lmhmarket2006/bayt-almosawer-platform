@@ -10,6 +10,44 @@ type LessonWatchPageProps = {
   }>;
 };
 
+function getResourceTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    PDF: "PDF",
+    ZIP: "ZIP",
+    LINK: "رابط",
+    OTHER: "ملف آخر",
+  };
+
+  return labels[type] ?? type;
+}
+
+function getResourceButtonLabel(type: string) {
+  const labels: Record<string, string> = {
+    PDF: "فتح ملف PDF",
+    ZIP: "تحميل ZIP",
+    LINK: "فتح الرابط",
+    OTHER: "فتح الملف",
+  };
+
+  return labels[type] ?? "فتح الملف";
+}
+
+function getResourceBadgeClass(type: string) {
+  if (type === "PDF") {
+    return "bg-red-50 text-red-700";
+  }
+
+  if (type === "ZIP") {
+    return "bg-blue-50 text-blue-700";
+  }
+
+  if (type === "LINK") {
+    return "bg-green-50 text-green-700";
+  }
+
+  return "bg-white text-[var(--brand-600)]";
+}
+
 export default async function LessonWatchPage({
   params,
 }: LessonWatchPageProps) {
@@ -29,6 +67,16 @@ export default async function LessonWatchPage({
                 where: {
                   userId: user.id,
                 },
+              },
+              resources: {
+                orderBy: [
+                  {
+                    sortOrder: "asc",
+                  },
+                  {
+                    createdAt: "asc",
+                  },
+                ],
               },
             },
             orderBy: {
@@ -155,6 +203,70 @@ export default async function LessonWatchPage({
               ) : null}
             </div>
 
+            <section className="mt-6 rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 sm:p-5">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <p className="font-bold text-[var(--brand-500)]">
+                    مرفقات الدرس
+                  </p>
+                  <h3 className="mt-1 text-xl font-extrabold">
+                    ملفات وموارد إضافية
+                  </h3>
+                </div>
+
+                <span className="rounded-full bg-white px-4 py-2 text-xs font-extrabold text-[var(--brand-600)]">
+                  {currentLesson.resources.length} مرفق
+                </span>
+              </div>
+
+              {currentLesson.resources.length === 0 ? (
+                <div className="mt-4 rounded-2xl border border-dashed border-[var(--border-soft)] bg-white p-5 text-center text-sm font-bold text-[var(--text-muted)]">
+                  لا توجد مرفقات لهذا الدرس حاليًا.
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-3">
+                  {currentLesson.resources.map((resource) => (
+                    <div
+                      key={resource.id}
+                      className="flex flex-col justify-between gap-4 rounded-2xl border border-[var(--border-soft)] bg-white p-4 sm:flex-row sm:items-center"
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-extrabold">{resource.title}</p>
+
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-extrabold ${getResourceBadgeClass(
+                              resource.type
+                            )}`}
+                          >
+                            {getResourceTypeLabel(resource.type)}
+                          </span>
+                        </div>
+
+                        <p className="mt-2 break-all text-xs text-[var(--text-muted)]" dir="ltr">
+                          {resource.url}
+                        </p>
+                      </div>
+
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-2xl bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--brand-700)] px-5 py-3 text-center text-sm font-extrabold text-white shadow-lg shadow-pink-500/20 transition hover:-translate-y-0.5"
+                      >
+                        {getResourceButtonLabel(resource.type)}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="mt-4 text-xs leading-6 text-[var(--text-muted)]">
+                إذا كان الرابط من Google Drive أو OneDrive ولم يفتح، تأكد أن
+                إعدادات مشاركة الملف تسمح بالوصول لمن لديه الرابط.
+              </p>
+            </section>
+
             <div className="mt-6 flex flex-col justify-between gap-3 border-t border-[var(--border-soft)] pt-5 sm:flex-row">
               <div className="grid grid-cols-2 gap-2 sm:flex">
                 {previousLesson ? (
@@ -184,7 +296,10 @@ export default async function LessonWatchPage({
                 )}
               </div>
 
-              <form action={`/api/lessons/${currentLesson.id}/complete`} method="POST">
+              <form
+                action={`/api/lessons/${currentLesson.id}/complete`}
+                method="POST"
+              >
                 <button
                   type="submit"
                   className="w-full rounded-2xl bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--brand-700)] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-pink-500/20 transition hover:-translate-y-0.5 sm:w-auto"
