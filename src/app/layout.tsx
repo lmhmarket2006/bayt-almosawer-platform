@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Almarai } from "next/font/google";
 import { getPlatformSiteName } from "@/lib/platform-settings";
@@ -25,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       "منصة عربية متخصصة في كورسات التصوير والإضاءة وصناعة المحتوى، مع تجربة تعليمية منظمة ولوحة تعلم للطلاب.",
     keywords: [
-      "بيت المصور",
+      "تصويرك",
       "كورسات تصوير",
       "تعلم التصوير",
       "تصوير احترافي",
@@ -33,6 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
       "صناعة المحتوى",
       "كورسات عربية",
       "دورات تصوير",
+      "تعليم التصوير",
+      "منصة تصوير",
     ],
     authors: [
       {
@@ -52,12 +55,21 @@ export async function generateMetadata(): Promise<Metadata> {
       title: siteName,
       description:
         "تعلّم التصوير والإضاءة وصناعة المحتوى من خلال كورسات عربية منظمة وتجربة تعليمية احترافية.",
+      images: [
+        {
+          url: "/logo-taswerak.png",
+          width: 1200,
+          height: 630,
+          alt: siteName,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: siteName,
       description:
         "كورسات عربية احترافية في التصوير والإضاءة وصناعة المحتوى.",
+      images: ["/logo-taswerak.png"],
     },
     robots: {
       index: true,
@@ -68,28 +80,34 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function Footer() {
   const siteName = await getPlatformSiteName();
-  const logoLetter = siteName.trim().charAt(0) || "ب";
 
   return (
     <footer className="mt-auto border-t border-[var(--border-soft)] bg-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-20">
         <div>
-          <Link href="/" className="inline-flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand-700)] via-[var(--brand-500)] to-[var(--brand-400)] text-white shadow-lg">
-              <span className="text-base font-extrabold">{logoLetter}</span>
+          <Link href="/" className="inline-flex items-center gap-4">
+            <div className="flex h-16 w-28 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-[var(--border-soft)]">
+              <Image
+                src="/logo-taswerak.png"
+                alt={siteName}
+                width={220}
+                height={120}
+                className="h-full w-full object-contain p-1.5"
+                priority
+              />
             </div>
 
             <div>
               <p className="font-extrabold">{siteName}</p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">
-                تعلّم التصوير باحترافية وتنظيم.
+                تعلّم التصوير وصناعة المحتوى باحترافية.
               </p>
             </div>
           </Link>
 
           <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-muted)]">
-            منصة عربية متخصصة في كورسات التصوير، الإضاءة، وصناعة المحتوى،
-            مصممة لتقديم تجربة تعليمية واضحة ومنظمة للطلاب.
+            منصة عربية متخصصة في تعليم التصوير، الإضاءة، وصناعة المحتوى، تجمع
+            بين التدريب العملي وتجربة تعلم منظمة وسهلة للطلاب.
           </p>
         </div>
 
