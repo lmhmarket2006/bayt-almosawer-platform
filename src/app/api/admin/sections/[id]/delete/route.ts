@@ -8,6 +8,37 @@ type DeleteSectionRouteProps = {
   }>;
 };
 
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectToCurriculum(
+  request: NextRequest,
+  courseId: string,
+  message: string
+) {
+  const url = new URL(
+    `${getBaseUrl(request)}/admin/courses/${courseId}/curriculum`
+  );
+
+  url.searchParams.set("message", message);
+
+  return NextResponse.redirect(url);
+}
+
+export async function GET(request: NextRequest) {
+  await requireRole("ADMIN");
+
+  return NextResponse.redirect(`${getBaseUrl(request)}/admin/courses`);
+}
+
 export async function POST(
   request: NextRequest,
   { params }: DeleteSectionRouteProps
@@ -21,21 +52,20 @@ export async function POST(
       id,
     },
     select: {
+      id: true,
       courseId: true,
     },
   });
 
   if (!section) {
-    return NextResponse.redirect(new URL("/admin/courses", request.url));
+    return NextResponse.redirect(`${getBaseUrl(request)}/admin/courses`);
   }
 
   await prisma.courseSection.delete({
     where: {
-      id,
+      id: section.id,
     },
   });
 
-  return NextResponse.redirect(
-    new URL(`/admin/courses/${section.courseId}/curriculum`, request.url)
-  );
+  return redirectToCurriculum(request, section.courseId, "section-deleted");
 }
