@@ -8,6 +8,31 @@ type DeleteLessonRouteProps = {
   }>;
 };
 
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectToCurriculum(
+  request: NextRequest,
+  courseId: string,
+  message: string
+) {
+  const url = new URL(
+    `${getBaseUrl(request)}/admin/courses/${courseId}/curriculum`
+  );
+
+  url.searchParams.set("message", message);
+
+  return NextResponse.redirect(url);
+}
+
 export async function POST(
   request: NextRequest,
   { params }: DeleteLessonRouteProps
@@ -21,13 +46,19 @@ export async function POST(
       id,
     },
     include: {
-      section: true,
+      section: {
+        select: {
+          courseId: true,
+        },
+      },
     },
   });
 
   if (!lesson) {
-    return NextResponse.redirect(new URL("/admin/courses", request.url));
+    return NextResponse.redirect(`${getBaseUrl(request)}/admin/courses`);
   }
+
+  const courseId = lesson.section.courseId;
 
   await prisma.lesson.delete({
     where: {
@@ -35,7 +66,5 @@ export async function POST(
     },
   });
 
-  return NextResponse.redirect(
-    new URL(`/admin/courses/${lesson.section.courseId}/curriculum`, request.url)
-  );
+  return redirectToCurriculum(request, courseId, "lesson-deleted");
 }
