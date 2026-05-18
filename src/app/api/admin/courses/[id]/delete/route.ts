@@ -31,10 +31,22 @@ export async function POST(
       },
       select: {
         id: true,
-        _count: {
+        enrollments: {
           select: {
-            orderItems: true,
-            enrollments: true,
+            id: true,
+            isActive: true,
+          },
+        },
+        orderItems: {
+          select: {
+            id: true,
+            order: {
+              select: {
+                id: true,
+                orderStatus: true,
+                paymentStatus: true,
+              },
+            },
           },
         },
       },
@@ -44,15 +56,61 @@ export async function POST(
       return redirectWithError(request, "/admin/courses", "course-not-found");
     }
 
-    const hasCommercialData =
-      course._count.orderItems > 0 || course._count.enrollments > 0;
+    const hasActiveStudents = course.enrollments.some(
+      (enrollment) => enrollment.isActive
+    );
 
-    if (hasCommercialData) {
+    const hasRealPaidOrConfirmedOrders = course.orderItems.some((item) => {
+      const order = item.order;
+
+      return (
+        order.paymentStatus === "PAID" ||
+        order.orderStatus === "CONFIRMED"
+      );
+    });
+
+    if (hasActiveStudents || hasRealPaidOrConfirmedOrders) {
       return redirectWithError(request, "/admin/courses", "course-has-data");
     }
 
-    await prisma.$transaction([
-      prisma.lessonResource.deleteMany({
+    await prisma.$transaction(async (tx) => {
+      const relatedOrderItems = await tx.orderItem.findMany({
+        where: {
+          courseId: course.id,
+        },
+        select: {
+          id: true,
+          orderId: true,
+        },
+      });
+
+      const relatedOrderIds = Array.from(
+        new Set(relatedOrderItems.map((item) => item.orderId))
+      );
+
+      await tx.orderItem.deleteMany({
+        where: {
+          courseId: course.id,
+        },
+      });
+
+      for (const orderId of relatedOrderIds) {
+        const remainingItemsCount = await tx.orderItem.count({
+          where: {
+            orderId,
+          },
+        });
+
+        if (remainingItemsCount === 0) {
+          await tx.order.delete({
+            where: {
+              id: orderId,
+            },
+          });
+        }
+      }
+
+      await tx.lessonResource.deleteMany({
         where: {
           lesson: {
             section: {
@@ -60,9 +118,9 @@ export async function POST(
             },
           },
         },
-      }),
+      });
 
-      prisma.lessonProgress.deleteMany({
+      await tx.lessonProgress.deleteMany({
         where: {
           lesson: {
             section: {
@@ -70,28 +128,28 @@ export async function POST(
             },
           },
         },
-      }),
+      });
 
-      prisma.lesson.deleteMany({
+      await tx.lesson.deleteMany({
         where: {
           section: {
             courseId: course.id,
           },
         },
-      }),
+      });
 
-      prisma.courseSection.deleteMany({
+      await tx.courseSection.deleteMany({
         where: {
           courseId: course.id,
         },
-      }),
+      });
 
-      prisma.course.delete({
+      await tx.course.delete({
         where: {
           id: course.id,
         },
-      }),
-    ]);
+      });
+    });
 
     return redirectToAdminCourses(request, "course-deleted");
   } catch (error) {
