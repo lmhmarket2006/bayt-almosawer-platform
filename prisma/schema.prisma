@@ -52,6 +52,13 @@ enum AccessType {
   MANUAL
 }
 
+enum LessonResourceType {
+  PDF
+  ZIP
+  LINK
+  OTHER
+}
+
 model User {
   id           String  @id @default(cuid())
   name         String
@@ -165,9 +172,28 @@ model Lesson {
 
   section    CourseSection    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   progresses LessonProgress[]
+  resources  LessonResource[]
 
   @@index([sectionId])
   @@index([isFreePreview])
+  @@index([sortOrder])
+}
+
+model LessonResource {
+  id        String             @id @default(cuid())
+  lessonId  String
+  title     String
+  url       String             @db.Text
+  type      LessonResourceType @default(LINK)
+  sortOrder Int                @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([type])
   @@index([sortOrder])
 }
 
@@ -266,6 +292,7 @@ model Setting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model PlatformSettings {
   id                String   @id @default(cuid())
   siteName          String   @default("منصة بيت المصور التعليمية")
