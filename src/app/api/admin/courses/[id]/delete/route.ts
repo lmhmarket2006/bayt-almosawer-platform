@@ -1,8 +1,8 @@
-import { CourseStatus } from "@prisma/client";
+
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
-import { redirectToAdminCourses } from "@/lib/url";
+import { redirectToAdminCourses, redirectWithError } from "@/lib/url";
 
 type DeleteCourseRouteProps = {
   params: Promise<{
@@ -10,7 +10,6 @@ type DeleteCourseRouteProps = {
   }>;
 };
 
-// لو فتحت رابط API مباشرة في المتصفح
 export async function GET(request: NextRequest) {
   await requireRole("ADMIN");
 
@@ -31,37 +30,24 @@ export async function POST(
     },
     select: {
       id: true,
-      title: true,
       _count: {
         select: {
           orderItems: true,
           enrollments: true,
-          sections: true,
         },
       },
     },
   });
 
   if (!course) {
-    return redirectToAdminCourses(request, "course-not-found");
+    return redirectWithError(request, "/admin/courses", "course-not-found");
   }
 
   const hasCommercialData =
     course._count.orderItems > 0 || course._count.enrollments > 0;
 
-  // لو الكورس عليه طلبات أو طلاب، الأفضل تجاريًا عدم حذفه نهائيًا
   if (hasCommercialData) {
-    await prisma.course.update({
-      where: {
-        id: course.id,
-      },
-      data: {
-        isPublished: false,
-        status: CourseStatus.ARCHIVED,
-      },
-    });
-
-    return redirectToAdminCourses(request, "course-archived");
+    return redirectWithError(request, "/admin/courses", "course-has-data");
   }
 
   await prisma.course.delete({
