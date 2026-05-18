@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { AdminAlert } from "@/components/AdminAlert";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getAdminError, getAdminMessage } from "@/lib/admin-messages";
 
 type AdminOrdersPageProps = {
   searchParams: Promise<{
     message?: string;
+    error?: string;
   }>;
 };
 
@@ -40,22 +43,14 @@ function getOrderStatusLabel(status: string) {
   return labels[status] ?? status;
 }
 
-function getMessage(message?: string) {
-  const messages: Record<string, string> = {
-    confirmed: "تم تأكيد الطلب وفتح الكورس للطالب بنجاح.",
-    rejected: "تم رفض الطلب.",
-  };
-
-  return message ? messages[message] : null;
-}
-
 export default async function AdminOrdersPage({
   searchParams,
 }: AdminOrdersPageProps) {
   await requireRole("ADMIN");
 
   const params = await searchParams;
-  const message = getMessage(params.message);
+  const message = getAdminMessage(params.message);
+  const error = getAdminError(params.error);
 
   const orders = await prisma.order.findMany({
     include: {
@@ -95,11 +90,8 @@ export default async function AdminOrdersPage({
           </p>
         </div>
 
-        {message ? (
-          <div className="mb-6 rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-4 text-sm font-bold text-[var(--brand-700)] shadow-sm">
-            {message}
-          </div>
-        ) : null}
+        {message ? <AdminAlert type="success">{message}</AdminAlert> : null}
+        {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
 
         {orders.length === 0 ? (
           <div className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-8 text-center shadow-sm">
@@ -123,11 +115,17 @@ export default async function AdminOrdersPage({
                     <h2 className="mt-1 text-xl font-extrabold">
                       {order.user.name}
                     </h2>
-                    <p className="mt-1 text-sm text-[var(--text-muted)]" dir="ltr">
+                    <p
+                      className="mt-1 text-sm text-[var(--text-muted)]"
+                      dir="ltr"
+                    >
                       {order.user.email}
                     </p>
                     {order.user.phone ? (
-                      <p className="mt-1 text-sm text-[var(--text-muted)]" dir="ltr">
+                      <p
+                        className="mt-1 text-sm text-[var(--text-muted)]"
+                        dir="ltr"
+                      >
                         {order.user.phone}
                       </p>
                     ) : null}
