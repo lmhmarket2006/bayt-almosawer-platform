@@ -10,6 +10,28 @@ type LessonWatchPageProps = {
   }>;
 };
 
+type VideoSource =
+  | {
+      type: "iframe";
+      url: string;
+      provider: "YouTube" | "Vimeo" | "Embed";
+    }
+  | {
+      type: "video";
+      url: string;
+      provider: "Video";
+    }
+  | {
+      type: "none";
+      url: "";
+      provider: "None";
+    }
+  | {
+      type: "invalid";
+      url: string;
+      provider: "Invalid";
+    };
+
 function getResourceTypeLabel(type: string) {
   const labels: Record<string, string> = {
     PDF: "PDF",
@@ -46,6 +68,204 @@ function getResourceBadgeClass(type: string) {
   }
 
   return "bg-white text-[var(--brand-600)]";
+}
+
+function getYouTubeId(url: URL) {
+  if (url.hostname.includes("youtu.be")) {
+    return url.pathname.split("/").filter(Boolean)[0] ?? "";
+  }
+
+  if (url.hostname.includes("youtube.com")) {
+    if (url.pathname.startsWith("/watch")) {
+      return url.searchParams.get("v") ?? "";
+    }
+
+    if (url.pathname.startsWith("/embed/")) {
+      return url.pathname.split("/").filter(Boolean)[1] ?? "";
+    }
+
+    if (url.pathname.startsWith("/shorts/")) {
+      return url.pathname.split("/").filter(Boolean)[1] ?? "";
+    }
+  }
+
+  return "";
+}
+
+function getVimeoId(url: URL) {
+  if (!url.hostname.includes("vimeo.com")) {
+    return "";
+  }
+
+  if (url.hostname.includes("player.vimeo.com")) {
+    const parts = url.pathname.split("/").filter(Boolean);
+    const videoIndex = parts.indexOf("video");
+
+    if (videoIndex >= 0 && parts[videoIndex + 1]) {
+      return parts[videoIndex + 1];
+    }
+  }
+
+  return url.pathname.split("/").filter(Boolean)[0] ?? "";
+}
+
+function isDirectVideoUrl(url: URL) {
+  const pathname = url.pathname.toLowerCase();
+
+  return (
+    pathname.endsWith(".mp4") ||
+    pathname.endsWith(".webm") ||
+    pathname.endsWith(".ogg")
+  );
+}
+
+function normalizeVideoSource(value?: string | null): VideoSource {
+  const rawUrl = String(value || "").trim();
+
+  if (!rawUrl) {
+    return {
+      type: "none",
+      url: "",
+      provider: "None",
+    };
+  }
+
+  try {
+    const url = new URL(rawUrl);
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return {
+        type: "invalid",
+        url: rawUrl,
+        provider: "Invalid",
+      };
+    }
+
+    const youtubeId = getYouTubeId(url);
+
+    if (youtubeId) {
+      return {
+        type: "iframe",
+        url: `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`,
+        provider: "YouTube",
+      };
+    }
+
+    const vimeoId = getVimeoId(url);
+
+    if (vimeoId) {
+      return {
+        type: "iframe",
+        url: `https://player.vimeo.com/video/${vimeoId}`,
+        provider: "Vimeo",
+      };
+    }
+
+    if (isDirectVideoUrl(url)) {
+      return {
+        type: "video",
+        url: rawUrl,
+        provider: "Video",
+      };
+    }
+
+    if (
+      rawUrl.includes("/embed/") ||
+      rawUrl.includes("player.") ||
+      rawUrl.includes("iframe")
+    ) {
+      return {
+        type: "iframe",
+        url: rawUrl,
+        provider: "Embed",
+      };
+    }
+
+    return {
+      type: "invalid",
+      url: rawUrl,
+      provider: "Invalid",
+    };
+  } catch {
+    return {
+      type: "invalid",
+      url: rawUrl,
+      provider: "Invalid",
+    };
+  }
+}
+
+function getVideoProviderLabel(source: VideoSource) {
+  const labels: Record<string, string> = {
+    YouTube: "YouTube",
+    Vimeo: "Vimeo",
+    Embed: "Embed",
+    Video: "ملف فيديو مباشر",
+    None: "لا يوجد فيديو",
+    Invalid: "رابط غير صالح",
+  };
+
+  return labels[source.provider] ?? source.provider;
+}
+
+function VideoPlayer({
+  source,
+  title,
+}: {
+  source: VideoSource;
+  title: string;
+}) {
+  if (source.type === "none") {
+    return (
+      <div className="flex aspect-video items-center justify-center p-8 text-center text-white">
+        <div>
+          <p className="text-xl font-extrabold">لا يوجد فيديو لهذا الدرس</p>
+          <p className="mt-3 text-sm leading-7 text-white/60">
+            يمكن للإدارة إضافة رابط فيديو من صفحة تعديل الدرس.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (source.type === "invalid") {
+    return (
+      <div className="flex aspect-video items-center justify-center p-8 text-center text-white">
+        <div>
+          <p className="text-xl font-extrabold">رابط الفيديو غير مدعوم</p>
+          <p className="mt-3 text-sm leading-7 text-white/60">
+            استخدم رابط YouTube أو Vimeo أو رابط Embed أو ملف فيديو مباشر بصيغة
+            MP4 / WebM.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (source.type === "video") {
+    return (
+      <video
+        src={source.url}
+        className="aspect-video w-full bg-black"
+        controls
+        controlsList="nodownload"
+        preload="metadata"
+      >
+        المتصفح لا يدعم تشغيل الفيديو.
+      </video>
+    );
+  }
+
+  return (
+    <iframe
+      src={source.url}
+      title={title}
+      className="aspect-video w-full"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerPolicy="strict-origin-when-cross-origin"
+      allowFullScreen
+    />
+  );
 }
 
 export default async function LessonWatchPage({
@@ -118,6 +338,8 @@ export default async function LessonWatchPage({
     notFound();
   }
 
+  const videoSource = normalizeVideoSource(currentLesson.videoUrl);
+
   const completedLessonsCount = lessons.filter(
     (lesson) => lesson.progresses.length > 0 && lesson.progresses[0].isCompleted
   ).length;
@@ -171,21 +393,32 @@ export default async function LessonWatchPage({
 
         <div className="grid gap-5 lg:grid-cols-[1.5fr_0.8fr]">
           <section className="overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-4 shadow-sm sm:rounded-[2rem] sm:p-5">
-            <div className="overflow-hidden rounded-[1.25rem] bg-[var(--brand-950)] sm:rounded-[1.5rem]">
-              {currentLesson.videoUrl ? (
-                <iframe
-                  src={currentLesson.videoUrl}
-                  title={currentLesson.title}
-                  className="aspect-video w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <div className="flex aspect-video items-center justify-center p-8 text-center text-white">
-                  لا يوجد فيديو مضاف لهذا الدرس حاليًا.
+            <div className="overflow-hidden rounded-[1.25rem] bg-[var(--brand-950)] shadow-2xl shadow-black/10 sm:rounded-[1.5rem]">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-4 py-3 text-white">
+                <div>
+                  <p className="text-xs font-bold text-white/50">مشغل الدرس</p>
+                  <p className="mt-1 text-sm font-extrabold">
+                    {getVideoProviderLabel(videoSource)}
+                  </p>
                 </div>
-              )}
+
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white/80">
+                  {currentLesson.durationMinutes > 0
+                    ? `${currentLesson.durationMinutes} دقيقة`
+                    : "بدون مدة"}
+                </span>
+              </div>
+
+              <VideoPlayer source={videoSource} title={currentLesson.title} />
             </div>
+
+            {videoSource.type === "invalid" ? (
+              <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-800">
+                رابط الفيديو الحالي غير قابل للتشغيل داخل المشغل. من لوحة
+                الإدارة استخدم رابط YouTube عادي، أو Vimeo، أو رابط Embed، أو
+                ملف MP4 مباشر.
+              </div>
+            ) : null}
 
             <div className="mt-5 sm:mt-6">
               <p className="font-bold text-[var(--brand-500)]">
@@ -243,7 +476,10 @@ export default async function LessonWatchPage({
                           </span>
                         </div>
 
-                        <p className="mt-2 break-all text-xs text-[var(--text-muted)]" dir="ltr">
+                        <p
+                          className="mt-2 break-all text-xs text-[var(--text-muted)]"
+                          dir="ltr"
+                        >
                           {resource.url}
                         </p>
                       </div>
