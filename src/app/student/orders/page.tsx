@@ -58,6 +58,22 @@ function cleanWhatsAppNumber(value?: string | null) {
   return value.replace(/\D/g, "");
 }
 
+function getPaymentBadgeClass(status: string) {
+  if (status === "PAID") {
+    return "rounded-full bg-green-50 px-3 py-1 text-xs font-extrabold text-green-700";
+  }
+
+  if (status === "PENDING") {
+    return "rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800";
+  }
+
+  if (status === "REJECTED") {
+    return "rounded-full bg-red-50 px-3 py-1 text-xs font-extrabold text-red-700";
+  }
+
+  return "rounded-full bg-[var(--brand-50)] px-3 py-1 text-xs font-extrabold text-[var(--brand-600)]";
+}
+
 export default async function StudentOrdersPage({
   searchParams,
 }: StudentOrdersPageProps) {
@@ -83,7 +99,7 @@ export default async function StudentOrdersPage({
     }),
     prisma.platformSettings.findFirst({
       orderBy: {
-        createdAt: "asc",
+        updatedAt: "desc",
       },
     }),
   ]);
@@ -100,27 +116,92 @@ export default async function StudentOrdersPage({
     settings?.supportPhone ||
     settings?.supportEmail;
 
+  const pendingOrdersCount = orders.filter(
+    (order) => order.paymentStatus === "PENDING"
+  ).length;
+
+  const paidOrdersCount = orders.filter(
+    (order) => order.paymentStatus === "PAID"
+  ).length;
+
   return (
     <main className="min-h-screen px-5 py-8 sm:px-8 lg:px-20">
-      <div className="mx-auto max-w-6xl">
-        <section className="mb-8 rounded-[2rem] border border-[var(--border-soft)] bg-white p-6 shadow-sm sm:p-8">
-          <Link
-            href="/student"
-            className="mb-5 inline-flex text-sm font-extrabold text-[var(--brand-600)]"
-          >
-            ← العودة للوحة الطالب
-          </Link>
+      <div className="mx-auto max-w-7xl">
+        <section className="relative mb-8 overflow-hidden rounded-[2rem] border border-[var(--border-soft)] bg-white shadow-sm">
+          <div className="pointer-events-none absolute -right-20 top-8 h-72 w-72 rounded-full bg-[var(--brand-400)]/15 blur-3xl" />
+          <div className="pointer-events-none absolute -left-20 bottom-8 h-72 w-72 rounded-full bg-[var(--accent-500)]/15 blur-3xl" />
 
-          <p className="font-bold text-[var(--brand-500)]">طلباتي</p>
+          <div className="relative grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="p-6 sm:p-8">
+              <Link
+                href="/student"
+                className="mb-5 inline-flex text-sm font-extrabold text-[var(--brand-600)] transition hover:text-[var(--accent-500)]"
+              >
+                ← العودة للوحة الطالب
+              </Link>
 
-          <h1 className="mt-2 text-3xl font-extrabold">
-            طلبات شراء الكورسات
-          </h1>
+              <p className="font-bold text-[var(--brand-500)]">طلباتي</p>
 
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
-            هنا تظهر طلباتك وحالة تأكيد الدفع. إذا كان الطلب بانتظار الدفع،
-            ستجد بيانات التحويل البنكي وطريقة إرسال الإيصال في نفس الصفحة.
-          </p>
+              <h1 className="mt-2 text-3xl font-extrabold leading-tight sm:text-4xl">
+                طلبات شراء الكورسات
+              </h1>
+
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
+                هنا تظهر طلباتك وحالة تأكيد الدفع. إذا كان الطلب بانتظار
+                التأكيد، ستجد بيانات التحويل البنكي وطريقة إرسال الإيصال في
+                نفس الصفحة.
+              </p>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/courses"
+                  className="rounded-2xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-5 py-3 text-center text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5"
+                >
+                  تصفح الكورسات
+                </Link>
+
+                <Link
+                  href="/student/my-courses"
+                  className="rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
+                >
+                  كورساتي المفتوحة
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-[var(--brand-950)] p-6 text-white sm:p-8">
+              <p className="text-sm font-bold text-white/60">ملخص الطلبات</p>
+
+              <div className="mt-5 grid gap-3">
+                <div className="rounded-2xl bg-white/10 p-4">
+                  <p className="text-xs text-white/60">إجمالي الطلبات</p>
+                  <p className="mt-1 text-3xl font-extrabold">
+                    {orders.length}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-white/10 p-4">
+                    <p className="text-xs text-white/60">قيد المراجعة</p>
+                    <p className="mt-1 text-2xl font-extrabold">
+                      {pendingOrdersCount}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-white/10 p-4">
+                    <p className="text-xs text-white/60">مؤكدة</p>
+                    <p className="mt-1 text-2xl font-extrabold">
+                      {paidOrdersCount}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm leading-7 text-white/70">
+                  بعد تأكيد الدفع، سيتم فتح الكورس تلقائيًا داخل صفحة كورساتي.
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         {message ? (
@@ -131,14 +212,20 @@ export default async function StudentOrdersPage({
 
         {orders.length === 0 ? (
           <section className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-8 text-center shadow-sm">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--accent-500)] text-2xl shadow-lg shadow-orange-500/20">
+              🧾
+            </div>
+
             <h2 className="text-2xl font-extrabold">لا توجد طلبات بعد</h2>
+
             <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[var(--text-muted)]">
-              عند شراء أي كورس، سيظهر طلبك هنا بانتظار مراجعة الإدارة.
+              عند شراء أي كورس، سيظهر طلبك هنا بانتظار مراجعة الإدارة وتأكيد
+              الدفع.
             </p>
 
             <Link
               href="/courses"
-              className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--brand-700)] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-pink-500/20"
+              className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5"
             >
               تصفح الكورسات
             </Link>
@@ -162,12 +249,12 @@ export default async function StudentOrdersPage({
                   <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
                     <div className="p-6 sm:p-8">
                       <div className="mb-4 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-[#f7e7f5] px-3 py-1 text-xs font-extrabold text-[var(--brand-500)]">
-                          {getOrderStatusLabel(order.orderStatus)}
+                        <span className={getPaymentBadgeClass(order.paymentStatus)}>
+                          {getPaymentStatusLabel(order.paymentStatus)}
                         </span>
 
-                        <span className="rounded-full bg-[#f7e7f5] px-3 py-1 text-xs font-extrabold text-[var(--brand-500)]">
-                          {getPaymentStatusLabel(order.paymentStatus)}
+                        <span className="rounded-full bg-[var(--brand-50)] px-3 py-1 text-xs font-extrabold text-[var(--brand-600)]">
+                          {getOrderStatusLabel(order.orderStatus)}
                         </span>
                       </div>
 
@@ -184,7 +271,7 @@ export default async function StudentOrdersPage({
                         })}
                       </p>
 
-                      <div className="mt-5 rounded-[1.5rem] bg-[var(--surface-soft)] p-5">
+                      <div className="mt-5 rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-5">
                         <p className="text-sm font-bold text-[var(--text-muted)]">
                           إجمالي الطلب
                         </p>
@@ -212,14 +299,14 @@ export default async function StudentOrdersPage({
                       {order.paymentStatus === "PAID" ? (
                         <Link
                           href="/student/my-courses"
-                          className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--brand-700)] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-pink-500/20 transition hover:-translate-y-0.5"
+                          className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5"
                         >
                           الذهاب إلى كورساتي
                         </Link>
                       ) : null}
                     </div>
 
-                    <aside className="border-t border-[var(--border-soft)] bg-[var(--surface-soft)] p-6 sm:p-8 lg:border-t-0 lg:border-r">
+                    <aside className="border-t border-[var(--border-soft)] bg-[var(--surface-soft)] p-6 sm:p-8 lg:border-r lg:border-t-0">
                       {isPendingPayment ? (
                         <div>
                           <p className="font-bold text-[var(--brand-500)]">
