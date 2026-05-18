@@ -35,7 +35,6 @@ export async function POST(
           select: {
             orderItems: true,
             enrollments: true,
-            sections: true,
           },
         },
       },
