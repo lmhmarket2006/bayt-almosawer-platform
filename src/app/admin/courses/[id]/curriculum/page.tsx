@@ -1,20 +1,31 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminAlert } from "@/components/AdminAlert";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getAdminError, getAdminMessage } from "@/lib/admin-messages";
 
 type CurriculumPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    message?: string;
+    error?: string;
+  }>;
 };
 
 export default async function CourseCurriculumPage({
   params,
+  searchParams,
 }: CurriculumPageProps) {
   await requireRole("ADMIN");
 
   const { id } = await params;
+  const query = await searchParams;
+
+  const message = getAdminMessage(query.message);
+  const error = getAdminError(query.error);
 
   const course = await prisma.course.findUnique({
     where: {
@@ -92,6 +103,9 @@ export default async function CourseCurriculumPage({
             </div>
           </div>
         </div>
+
+        {message ? <AdminAlert type="success">{message}</AdminAlert> : null}
+        {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
 
         <div className="grid gap-6 lg:grid-cols-[0.8fr_1.4fr]">
           <aside className="h-fit rounded-[2rem] border border-[var(--border-soft)] bg-white p-6 shadow-sm lg:sticky lg:top-6">
