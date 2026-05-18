@@ -34,14 +34,61 @@ function createSlug(value: string) {
     .replace(/^-|-$/g, "");
 }
 
-function parseMoney(value: FormDataEntryValue | null) {
+function normalizeNumber(value: string) {
+  return value
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/٫/g, ".")
+    .replace(/٬/g, "")
+    .replace(/,/g, "")
+    .replace(/\s/g, "")
+    .replace(/[^\d.]/g, "");
+}
+
+function parseRequiredMoney(value: FormDataEntryValue | null) {
   const rawValue = String(value || "").trim();
 
   if (!rawValue) {
     return 0;
   }
 
-  const parsedValue = Number(rawValue);
+  const normalizedValue = normalizeNumber(rawValue);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (normalizedValue.split(".").length > 2) {
+    return null;
+  }
+
+  const parsedValue = Number(normalizedValue);
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+    return null;
+  }
+
+  return parsedValue;
+}
+
+function parseOptionalMoney(value: FormDataEntryValue | null) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const normalizedValue = normalizeNumber(rawValue);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (normalizedValue.split(".").length > 2) {
+    return null;
+  }
+
+  const parsedValue = Number(normalizedValue);
 
   if (!Number.isFinite(parsedValue) || parsedValue < 0) {
     return null;
@@ -56,7 +103,6 @@ function getNullableText(value: FormDataEntryValue | null) {
   return text || null;
 }
 
-// لو تم فتح الرابط مباشرة من المتصفح
 export async function GET(
   request: NextRequest,
   { params }: UpdateCourseRouteProps
@@ -91,10 +137,8 @@ export async function POST(
     const level = getCourseLevel(String(formData.get("level") || ""));
     const language = String(formData.get("language") || "ar").trim() || "ar";
 
-    const price = parseMoney(formData.get("price"));
-    const salePrice = formData.get("salePrice")
-      ? parseMoney(formData.get("salePrice"))
-      : null;
+    const price = parseRequiredMoney(formData.get("price"));
+    const salePrice = parseOptionalMoney(formData.get("salePrice"));
 
     const isPublished = formData.get("isPublished") === "true";
 
@@ -115,7 +159,7 @@ export async function POST(
       return redirectToAdminCourseEdit(request, id, "missing-required-fields");
     }
 
-    if (price === null || salePrice === null) {
+    if (price === null) {
       return redirectToAdminCourseEdit(request, id, "invalid-price");
     }
 
