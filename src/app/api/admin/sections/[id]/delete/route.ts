@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { redirectTo, redirectToAdminCourseCurriculum } from "@/lib/url";
 
 type DeleteSectionRouteProps = {
   params: Promise<{
@@ -8,35 +9,12 @@ type DeleteSectionRouteProps = {
   }>;
 };
 
-function getBaseUrl(request: NextRequest) {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
-
-  if (forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
-  return request.nextUrl.origin;
-}
-
-function redirectToCurriculum(
-  request: NextRequest,
-  courseId: string,
-  message: string
-) {
-  const url = new URL(
-    `${getBaseUrl(request)}/admin/courses/${courseId}/curriculum`
-  );
-
-  url.searchParams.set("message", message);
-
-  return NextResponse.redirect(url);
-}
-
 export async function GET(request: NextRequest) {
   await requireRole("ADMIN");
 
-  return NextResponse.redirect(`${getBaseUrl(request)}/admin/courses`);
+  return redirectTo(request, "/admin/courses", {
+    message: "use-delete-button",
+  });
 }
 
 export async function POST(
@@ -58,7 +36,9 @@ export async function POST(
   });
 
   if (!section) {
-    return NextResponse.redirect(`${getBaseUrl(request)}/admin/courses`);
+    return redirectTo(request, "/admin/courses", {
+      message: "section-not-found",
+    });
   }
 
   await prisma.courseSection.delete({
@@ -67,5 +47,9 @@ export async function POST(
     },
   });
 
-  return redirectToCurriculum(request, section.courseId, "section-deleted");
+  return redirectToAdminCourseCurriculum(
+    request,
+    section.courseId,
+    "section-deleted"
+  );
 }
