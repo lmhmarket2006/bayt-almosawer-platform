@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CourseStatus, Prisma } from "@prisma/client";
+import { AdminAlert } from "@/components/AdminAlert";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getAdminError, getAdminMessage } from "@/lib/admin-messages";
 
 type AdminCoursesPageProps = {
   searchParams: Promise<{
@@ -40,36 +42,6 @@ function getLevelLabel(level: string) {
   };
 
   return labels[level] ?? level;
-}
-
-function getMessage(message?: string) {
-  const messages: Record<string, string> = {
-    "course-created": "تم إضافة الكورس بنجاح.",
-    "course-updated": "تم حفظ تعديلات الكورس بنجاح.",
-    "course-published": "تم نشر الكورس وإظهاره للطلاب.",
-    "course-hidden": "تم إخفاء الكورس من الواجهة العامة.",
-    "course-archived": "تم أرشفة الكورس وإخفاؤه من الواجهة العامة.",
-    "course-unarchived": "تمت استعادة الكورس من الأرشيف وأصبح مسودة مخفية.",
-    "course-deleted": "تم حذف الكورس نهائيًا.",
-    "use-delete-button": "استخدم زر الحذف من لوحة الإدارة.",
-    "use-archive-button": "استخدم زر الأرشفة من لوحة الإدارة.",
-    "use-unarchive-button": "استخدم زر استعادة الكورس من لوحة الإدارة.",
-  };
-
-  return message ? messages[message] : null;
-}
-
-function getError(error?: string) {
-  const errors: Record<string, string> = {
-    "course-not-found": "الكورس غير موجود.",
-    "course-has-data":
-      "لا يمكن حذف هذا الكورس نهائيًا لأنه يحتوي على طلبات أو طلاب مسجلين. يمكنك أرشفته بدلًا من الحذف.",
-    "delete-failed": "حدث خطأ أثناء حذف الكورس.",
-    "archive-failed": "حدث خطأ أثناء أرشفة الكورس.",
-    "unarchive-failed": "حدث خطأ أثناء استعادة الكورس من الأرشيف.",
-  };
-
-  return error ? errors[error] : null;
 }
 
 function getStatusFilter(status?: string): Prisma.CourseWhereInput {
@@ -111,8 +83,8 @@ export default async function AdminCoursesPage({
 
   const params = await searchParams;
   const status = String(params.status || "").trim();
-  const message = getMessage(params.message);
-  const error = getError(params.error);
+  const message = getAdminMessage(params.message);
+  const error = getAdminError(params.error);
 
   const where = getStatusFilter(status);
 
@@ -232,17 +204,8 @@ export default async function AdminCoursesPage({
           </Link>
         </div>
 
-        {message ? (
-          <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold text-green-700">
-            {message}
-          </div>
-        ) : null}
-
-        {error ? (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700">
-            {error}
-          </div>
-        ) : null}
+        {message ? <AdminAlert type="success">{message}</AdminAlert> : null}
+        {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
 
         <section className="mb-6 rounded-[2rem] border border-[var(--border-soft)] bg-white p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
