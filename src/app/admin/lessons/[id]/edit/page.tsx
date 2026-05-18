@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminAlert } from "@/components/AdminAlert";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { getAdminError, getAdminMessage } from "@/lib/admin-messages";
 
 type EditLessonPageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    message?: string;
+    error?: string;
   }>;
 };
 
@@ -20,10 +26,17 @@ function getResourceTypeLabel(type: string) {
   return labels[type] ?? type;
 }
 
-export default async function EditLessonPage({ params }: EditLessonPageProps) {
+export default async function EditLessonPage({
+  params,
+  searchParams,
+}: EditLessonPageProps) {
   await requireRole("ADMIN");
 
   const { id } = await params;
+  const query = await searchParams;
+
+  const message = getAdminMessage(query.message);
+  const error = getAdminError(query.error);
 
   const lesson = await prisma.lesson.findUnique({
     where: {
@@ -71,6 +84,9 @@ export default async function EditLessonPage({ params }: EditLessonPageProps) {
             الكورس: {lesson.section.course.title}
           </p>
         </div>
+
+        {message ? <AdminAlert type="success">{message}</AdminAlert> : null}
+        {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
 
         <form
           action={`/api/admin/lessons/${lesson.id}/update`}
