@@ -8,6 +8,23 @@ type DeleteCourseRouteProps = {
   }>;
 };
 
+function getBaseUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
+function redirectToCourses(request: NextRequest, message: string) {
+  const url = new URL(`${getBaseUrl(request)}/admin/courses`);
+  url.searchParams.set("message", message);
+  return NextResponse.redirect(url);
+}
+
 export async function POST(
   request: NextRequest,
   { params }: DeleteCourseRouteProps
@@ -16,37 +33,24 @@ export async function POST(
 
   const { id } = await params;
 
-  const relatedOrders = await prisma.orderItem.count({
+  const course = await prisma.course.findUnique({
     where: {
-      courseId: id,
+      id,
+    },
+    select: {
+      id: true,
     },
   });
 
-  const relatedEnrollments = await prisma.enrollment.count({
-    where: {
-      courseId: id,
-    },
-  });
-
-  if (relatedOrders > 0 || relatedEnrollments > 0) {
-    await prisma.course.update({
-      where: {
-        id,
-      },
-      data: {
-        isPublished: false,
-        status: "ARCHIVED",
-      },
-    });
-
-    return NextResponse.redirect(new URL("/admin/courses", request.url));
+  if (!course) {
+    return redirectToCourses(request, "course-not-found");
   }
 
   await prisma.course.delete({
     where: {
-      id,
+      id: course.id,
     },
   });
 
-  return NextResponse.redirect(new URL("/admin/courses", request.url));
+  return redirectToCourses(request, "course-deleted");
 }
