@@ -206,6 +206,12 @@ export default async function CourseDetailsPage({
                   <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
                     {getCourseTypeLabel(course.courseType)}
                   </span>
+
+                  {hasAccess ? (
+                    <span className="rounded-full bg-green-400/20 px-3 py-1 text-xs font-extrabold text-green-100 backdrop-blur">
+                      مفتوح لك
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="grid items-center gap-8 lg:grid-cols-[1fr_0.45fr]">
@@ -349,20 +355,32 @@ export default async function CourseDetailsPage({
 
                 <div className="relative">
                   <p className="text-sm font-bold text-white/60">
-                    بطاقة التسجيل
+                    {hasAccess ? "بطاقة التعلم" : "بطاقة التسجيل"}
                   </p>
+
                   <h2 className="mt-2 text-2xl font-extrabold">
-                    ابدأ هذا الكورس الآن
+                    {hasAccess ? "الكورس مفتوح لك" : "ابدأ هذا الكورس الآن"}
                   </h2>
 
-                  <div className="mt-5 rounded-2xl bg-white/10 p-4">
-                    <p className="text-xs font-bold text-white/60">
-                      سعر الكورس
-                    </p>
-                    <p className="mt-2 text-3xl font-extrabold">
-                      {formatPrice(course.salePrice ?? course.price)}
-                    </p>
-                  </div>
+                  {!hasAccess ? (
+                    <div className="mt-5 rounded-2xl bg-white/10 p-4">
+                      <p className="text-xs font-bold text-white/60">
+                        سعر الكورس
+                      </p>
+                      <p className="mt-2 text-3xl font-extrabold">
+                        {formatPrice(course.salePrice ?? course.price)}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-5 rounded-2xl bg-green-400/15 p-4">
+                      <p className="text-xs font-bold text-green-100/80">
+                        حالة الوصول
+                      </p>
+                      <p className="mt-2 text-2xl font-extrabold text-green-100">
+                        متاح للتعلم الآن
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -441,14 +459,16 @@ export default async function CourseDetailsPage({
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-                  <p className="text-xs font-bold text-[var(--text-muted)]">
-                    الوصول للمحتوى
-                  </p>
-                  <p className="mt-1 font-extrabold text-[var(--brand-900)]">
-                    بعد تأكيد الدفع
-                  </p>
-                </div>
+                {!hasAccess ? (
+                  <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
+                    <p className="text-xs font-bold text-[var(--text-muted)]">
+                      الوصول للمحتوى
+                    </p>
+                    <p className="mt-1 font-extrabold text-[var(--brand-900)]">
+                      بعد تأكيد الدفع
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </aside>
           </div>
