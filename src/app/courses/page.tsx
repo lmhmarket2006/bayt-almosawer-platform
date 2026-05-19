@@ -105,11 +105,11 @@ export default async function CoursesPage() {
   }
 
   return (
-    <main className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-white/85 backdrop-blur-xl">
+    <main className="min-h-screen bg-[var(--background)]">
+      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-white/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-20">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-14 w-24 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-[var(--border-soft)]">
+            <div className="flex h-14 w-24 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[var(--border-soft)]">
               <Image
                 src="/logo-taswerak.png"
                 alt={siteName}
@@ -131,15 +131,12 @@ export default async function CoursesPage() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-bold text-[var(--text-muted)] md:flex">
-            <Link
-              href="/"
-              className="transition hover:text-[var(--brand-600)]"
-            >
+            <Link href="/" className="transition hover:text-[var(--brand-600)]">
               الرئيسية
             </Link>
             <Link
               href="/courses"
-              className="transition hover:text-[var(--brand-600)]"
+              className="text-[var(--brand-700)] transition hover:text-[var(--brand-600)]"
             >
               الكورسات
             </Link>
@@ -153,7 +150,7 @@ export default async function CoursesPage() {
 
           <Link
             href={user ? "/student" : "/register"}
-            className="rounded-2xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5"
+            className="rounded-xl bg-[var(--accent-500)] px-4 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
           >
             {user ? "لوحة الطالب" : "ابدأ الآن"}
           </Link>
@@ -161,8 +158,8 @@ export default async function CoursesPage() {
       </header>
 
       <section className="relative overflow-hidden px-5 py-10 sm:px-8 lg:px-20 lg:py-14">
-        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[var(--brand-400)]/15 blur-3xl" />
-        <div className="pointer-events-none absolute -left-24 top-14 h-72 w-72 rounded-full bg-[var(--accent-500)]/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[var(--brand-400)]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 top-14 h-72 w-72 rounded-full bg-[var(--accent-500)]/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl">
           <div className="overflow-hidden rounded-[2rem] border border-[var(--border-soft)] bg-white shadow-sm">
@@ -180,9 +177,9 @@ export default async function CoursesPage() {
                   مكتبة كورسات تصويرك
                 </div>
 
-                <h1 className="max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl">
+                <h1 className="max-w-4xl text-4xl font-extrabold leading-tight text-[var(--brand-900)] sm:text-5xl">
                   اختر كورسك وابدأ
-                  <span className="block bg-gradient-to-l from-[var(--brand-400)] via-[var(--brand-500)] to-[var(--accent-500)] bg-clip-text text-transparent">
+                  <span className="block text-[var(--brand-700)]">
                     رحلة التعلم العملي
                   </span>
                 </h1>
@@ -256,7 +253,7 @@ export default async function CoursesPage() {
                       className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-400)] to-[var(--accent-500)] text-sm font-extrabold text-white">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-500)] text-sm font-extrabold text-white">
                           {index + 1}
                         </div>
                         <p className="font-extrabold">{step}</p>
@@ -282,7 +279,7 @@ export default async function CoursesPage() {
               <p className="font-bold text-[var(--brand-500)]">
                 جميع الكورسات
               </p>
-              <h2 className="mt-2 text-3xl font-extrabold">
+              <h2 className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
                 اختر المسار المناسب لك
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--text-muted)]">
@@ -294,14 +291,14 @@ export default async function CoursesPage() {
             {!user ? (
               <Link
                 href="/register"
-                className="rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
+                className="rounded-xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
               >
                 إنشاء حساب طالب
               </Link>
             ) : (
               <Link
                 href="/student/my-courses"
-                className="rounded-2xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
+                className="rounded-xl border border-[var(--border-soft)] bg-white px-5 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
               >
                 كورساتي المفتوحة
               </Link>
@@ -331,9 +328,12 @@ export default async function CoursesPage() {
                 return (
                   <article
                     key={course.id}
-                    className="group overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                    className="group overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                   >
-                    <div className="relative mb-5 h-48 overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-[var(--brand-950)] via-[var(--brand-700)] to-[var(--accent-500)]">
+                    <Link
+                      href={`/courses/${course.slug}`}
+                      className="relative block h-52 overflow-hidden bg-[var(--surface-soft)]"
+                    >
                       {course.thumbnailUrl ? (
                         <Image
                           src={course.thumbnailUrl}
@@ -343,74 +343,89 @@ export default async function CoursesPage() {
                           className="object-cover transition duration-500 group-hover:scale-105"
                         />
                       ) : (
-                        <>
-                          <div className="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-[var(--brand-400)]/30 blur-2xl" />
-                          <div className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-[var(--accent-500)]/30 blur-2xl" />
-                        </>
+                        <div className="flex h-full items-center justify-center bg-[var(--brand-950)] text-3xl text-white">
+                          🎥
+                        </div>
                       )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                      <div className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-[var(--brand-700)] shadow-sm">
+                        {course.category?.name ?? "كورس"}
+                      </div>
 
-                      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3">
-                        <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
-                          {course.category?.name ?? "كورس"}
+                      {state?.enrolled ? (
+                        <div className="absolute left-4 top-4 rounded-full bg-green-600 px-3 py-1 text-xs font-extrabold text-white shadow-sm">
+                          مفتوح لك
+                        </div>
+                      ) : state?.pending ? (
+                        <div className="absolute left-4 top-4 rounded-full bg-amber-500 px-3 py-1 text-xs font-extrabold text-white shadow-sm">
+                          قيد المراجعة
+                        </div>
+                      ) : null}
+                    </Link>
+
+                    <div className="p-5">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <span className="rounded-full bg-[var(--brand-50)] px-3 py-1 text-xs font-extrabold text-[var(--brand-700)]">
+                          {getLevelLabel(course.level)}
                         </span>
 
-                        <span className="rounded-full bg-black/25 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
+                        <span className="text-xs font-bold text-[var(--text-muted)]">
                           {lessonsCount} درس
                         </span>
                       </div>
-                    </div>
 
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="rounded-full bg-[var(--brand-50)] px-3 py-1 text-xs font-extrabold text-[var(--brand-600)]">
-                        {getLevelLabel(course.level)}
-                      </span>
-
-                      <span className="text-xs font-bold text-[var(--text-muted)]">
-                        {lessonsCount} درس
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-extrabold text-[var(--foreground)]">
-                      {course.title}
-                    </h3>
-
-                    {course.subtitle ? (
-                      <p className="mt-3 min-h-16 text-sm leading-7 text-[var(--text-muted)]">
-                        {course.subtitle}
-                      </p>
-                    ) : null}
-
-                    {user ? (
-                      <div
-                        className={
-                          state?.enrolled
-                            ? "mt-4 rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-xs font-bold text-green-700"
-                            : state?.pending
-                              ? "mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800"
-                              : "mt-4 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-xs font-bold text-[var(--text-muted)]"
-                        }
-                      >
-                        {state?.enrolled
-                          ? "هذا الكورس مفتوح لك بالفعل."
-                          : state?.pending
-                            ? "لديك طلب قيد المراجعة لهذا الكورس."
-                            : "يمكنك شراء هذا الكورس وفتحه بعد تأكيد الدفع."}
-                      </div>
-                    ) : null}
-
-                    <div className="mt-5 flex items-center justify-between gap-3">
-                      <strong className="text-lg font-extrabold text-[var(--brand-900)]">
-                        {formatPrice(course.salePrice ?? course.price)}
-                      </strong>
-
-                      <Link
-                        href={`/courses/${course.slug}`}
-                        className="rounded-xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:shadow-xl"
-                      >
-                        التفاصيل
+                      <Link href={`/courses/${course.slug}`}>
+                        <h3 className="line-clamp-2 min-h-14 text-xl font-extrabold leading-7 text-[var(--brand-900)] transition group-hover:text-[var(--brand-700)]">
+                          {course.title}
+                        </h3>
                       </Link>
+
+                      {course.subtitle ? (
+                        <p className="mt-3 line-clamp-2 min-h-14 text-sm leading-7 text-[var(--text-muted)]">
+                          {course.subtitle}
+                        </p>
+                      ) : null}
+
+                      {user ? (
+                        <div
+                          className={
+                            state?.enrolled
+                              ? "mt-4 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-xs font-bold text-green-700"
+                              : state?.pending
+                                ? "mt-4 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800"
+                                : "mt-4 rounded-xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-xs font-bold text-[var(--text-muted)]"
+                          }
+                        >
+                          {state?.enrolled
+                            ? "هذا الكورس مفتوح لك بالفعل."
+                            : state?.pending
+                              ? "لديك طلب قيد المراجعة لهذا الكورس."
+                              : "يمكنك شراء هذا الكورس وفتحه بعد تأكيد الدفع."}
+                        </div>
+                      ) : null}
+
+                      <div className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--border-soft)] pt-4">
+                        {state?.enrolled ? (
+                          <strong className="text-sm font-extrabold text-green-700">
+                            متاح للتعلم الآن
+                          </strong>
+                        ) : (
+                          <strong className="text-lg font-extrabold text-[var(--brand-900)]">
+                            {formatPrice(course.salePrice ?? course.price)}
+                          </strong>
+                        )}
+
+                        <Link
+                          href={`/courses/${course.slug}`}
+                          className={
+                            state?.enrolled
+                              ? "rounded-xl bg-[var(--brand-700)] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--brand-600)]"
+                              : "rounded-xl bg-[var(--accent-500)] px-5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
+                          }
+                        >
+                          {state?.enrolled ? "ابدأ التعلم" : "التفاصيل"}
+                        </Link>
+                      </div>
                     </div>
                   </article>
                 );
