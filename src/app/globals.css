@@ -1,31 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fbfc;
-  --foreground: #101416;
+  --background: #f7f8fa;
+  --foreground: #111827;
 
-  --brand-950: #050505;
-  --brand-900: #102a2e;
-  --brand-800: #064f55;
-  --brand-700: #006e78;
-  --brand-600: #008e9b;
-  --brand-500: #00afc0;
-  --brand-400: #08aeea;
-  --brand-300: #5de2f5;
-  --brand-200: #9eefff;
-  --brand-100: #cff7ff;
-  --brand-50: #eafbff;
+  --brand-950: #0f172a;
+  --brand-900: #111827;
+  --brand-800: #1f2937;
+  --brand-700: #0f766e;
+  --brand-600: #0d9488;
+  --brand-500: #14b8a6;
+  --brand-400: #2dd4bf;
+  --brand-300: #5eead4;
+  --brand-200: #99f6e4;
+  --brand-100: #ccfbf1;
+  --brand-50: #ecfdf5;
 
-  --accent-700: #b9360d;
-  --accent-600: #d94712;
-  --accent-500: #f25a1d;
-  --accent-400: #ff7a2f;
+  --accent-700: #c2410c;
+  --accent-600: #ea580c;
+  --accent-500: #f97316;
+  --accent-400: #fb923c;
 
   --surface: #ffffff;
-  --surface-soft: #f1f7f8;
-  --border-soft: #ddecef;
+  --surface-soft: #f3f4f6;
+  --border-soft: #e5e7eb;
 
-  --text-muted: #66777c;
+  --text-muted: #6b7280;
 }
 
 * {
@@ -39,9 +39,7 @@ html {
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top right, rgba(242, 90, 29, 0.1), transparent 28%),
-    radial-gradient(circle at top left, rgba(8, 174, 234, 0.12), transparent 25%),
-    radial-gradient(circle at 50% 0%, rgba(0, 191, 166, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(20, 184, 166, 0.06), transparent 280px),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-almarai), Arial, Helvetica, sans-serif;
@@ -60,6 +58,6 @@ select {
 }
 
 ::selection {
-  background: rgba(242, 90, 29, 0.22);
+  background: rgba(249, 115, 22, 0.2);
   color: var(--foreground);
 }
