@@ -68,7 +68,7 @@ function getResourceBadgeClass(type: string) {
     return "bg-green-50 text-green-700";
   }
 
-  return "bg-[var(--brand-50)] text-[var(--brand-600)]";
+  return "bg-[var(--brand-50)] text-[var(--brand-700)]";
 }
 
 function getYouTubeId(url: URL) {
@@ -359,17 +359,14 @@ export default async function LessonWatchPage({
     currentLesson.progresses[0].isCompleted;
 
   return (
-    <main className="min-h-screen px-4 py-5 sm:px-8 lg:px-20 lg:py-8">
+    <main className="min-h-screen bg-[var(--background)] px-4 py-5 sm:px-8 lg:px-20 lg:py-8">
       <div className="mx-auto max-w-7xl">
-        <section className="relative mb-5 overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-4 shadow-sm sm:rounded-[2rem] sm:p-5">
-          <div className="pointer-events-none absolute -right-16 top-4 h-48 w-48 rounded-full bg-[var(--brand-400)]/15 blur-3xl" />
-          <div className="pointer-events-none absolute -left-16 bottom-4 h-48 w-48 rounded-full bg-[var(--accent-500)]/15 blur-3xl" />
-
-          <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <section className="mb-5 rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-4 shadow-sm sm:rounded-[2rem] sm:p-5">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div>
               <Link
                 href="/student/my-courses"
-                className="mb-3 inline-flex text-sm font-extrabold text-[var(--brand-600)] transition hover:text-[var(--accent-500)]"
+                className="mb-3 inline-flex text-sm font-extrabold text-[var(--brand-700)] transition hover:text-[var(--accent-500)]"
               >
                 ← العودة إلى كورساتي
               </Link>
@@ -378,7 +375,7 @@ export default async function LessonWatchPage({
                 مشاهدة الدرس
               </p>
 
-              <h1 className="mt-2 text-2xl font-extrabold leading-tight lg:text-3xl">
+              <h1 className="mt-2 text-2xl font-extrabold leading-tight text-[var(--brand-900)] lg:text-3xl">
                 {course.title}
               </h1>
 
@@ -395,7 +392,7 @@ export default async function LessonWatchPage({
 
               <div className="h-2 overflow-hidden rounded-full bg-[var(--brand-50)]">
                 <div
-                  className="h-full rounded-full bg-gradient-to-l from-[var(--brand-400)] to-[var(--accent-500)]"
+                  className="h-full rounded-full bg-[var(--brand-700)]"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -409,7 +406,7 @@ export default async function LessonWatchPage({
 
         <div className="grid gap-5 lg:grid-cols-[1.5fr_0.8fr]">
           <section className="overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-4 shadow-sm sm:rounded-[2rem] sm:p-5">
-            <div className="overflow-hidden rounded-[1.25rem] bg-[var(--brand-950)] shadow-2xl shadow-black/10 sm:rounded-[1.5rem]">
+            <div className="overflow-hidden rounded-[1.25rem] bg-[var(--brand-950)] shadow-xl shadow-black/10 sm:rounded-[1.5rem]">
               <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-4 py-3 text-white">
                 <div>
                   <p className="text-xs font-bold text-white/50">مشغل الدرس</p>
@@ -441,7 +438,7 @@ export default async function LessonWatchPage({
                 الدرس {currentLessonIndex + 1} من {lessons.length}
               </p>
 
-              <h2 className="mt-2 text-2xl font-extrabold leading-tight sm:text-3xl">
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-[var(--brand-900)] sm:text-3xl">
                 {currentLesson.title}
               </h2>
 
@@ -462,12 +459,12 @@ export default async function LessonWatchPage({
                   <p className="font-bold text-[var(--brand-500)]">
                     مرفقات الدرس
                   </p>
-                  <h3 className="mt-1 text-xl font-extrabold">
+                  <h3 className="mt-1 text-xl font-extrabold text-[var(--brand-900)]">
                     ملفات وموارد إضافية
                   </h3>
                 </div>
 
-                <span className="rounded-full bg-white px-4 py-2 text-xs font-extrabold text-[var(--brand-600)]">
+                <span className="rounded-full bg-white px-4 py-2 text-xs font-extrabold text-[var(--brand-700)]">
                   {currentLesson.resources.length} مرفق
                 </span>
               </div>
@@ -485,7 +482,9 @@ export default async function LessonWatchPage({
                     >
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-extrabold">{resource.title}</p>
+                          <p className="font-extrabold text-[var(--brand-900)]">
+                            {resource.title}
+                          </p>
 
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-extrabold ${getResourceBadgeClass(
@@ -508,7 +507,7 @@ export default async function LessonWatchPage({
                         href={resource.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-2xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-5 py-3 text-center text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5"
+                        className="rounded-xl bg-[var(--accent-500)] px-5 py-3 text-center text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
                       >
                         {getResourceButtonLabel(resource.type)}
                       </a>
@@ -528,12 +527,12 @@ export default async function LessonWatchPage({
                 {previousLesson ? (
                   <Link
                     href={`/learn/${course.slug}/${previousLesson.id}`}
-                    className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
+                    className="rounded-xl border border-[var(--border-soft)] bg-white px-4 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
                   >
                     السابق
                   </Link>
                 ) : (
-                  <span className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-center text-sm font-bold text-[var(--text-muted)]">
+                  <span className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-center text-sm font-bold text-[var(--text-muted)]">
                     السابق
                   </span>
                 )}
@@ -541,12 +540,12 @@ export default async function LessonWatchPage({
                 {nextLesson ? (
                   <Link
                     href={`/learn/${course.slug}/${nextLesson.id}`}
-                    className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
+                    className="rounded-xl border border-[var(--border-soft)] bg-white px-4 py-3 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
                   >
                     التالي
                   </Link>
                 ) : (
-                  <span className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-center text-sm font-bold text-[var(--text-muted)]">
+                  <span className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-center text-sm font-bold text-[var(--text-muted)]">
                     التالي
                   </span>
                 )}
@@ -560,8 +559,8 @@ export default async function LessonWatchPage({
                   type="submit"
                   className={
                     isCompleted
-                      ? "w-full rounded-2xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-extrabold text-green-700 transition hover:-translate-y-0.5 sm:w-auto"
-                      : "w-full rounded-2xl bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 sm:w-auto"
+                      ? "w-full rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-extrabold text-green-700 transition hover:-translate-y-0.5 sm:w-auto"
+                      : "w-full rounded-xl bg-[var(--accent-500)] px-5 py-3 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)] sm:w-auto"
                   }
                 >
                   {isCompleted ? "تم إكمال الدرس" : "تحديد الدرس كمكتمل"}
@@ -574,9 +573,7 @@ export default async function LessonWatchPage({
             <div className="mb-5 rounded-[1.5rem] bg-[var(--brand-950)] p-5 text-white">
               <p className="text-sm font-bold text-white/60">محتوى الكورس</p>
 
-              <h3 className="mt-2 text-xl font-extrabold">
-                الدروس والأقسام
-              </h3>
+              <h3 className="mt-2 text-xl font-extrabold">الدروس والأقسام</h3>
 
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between text-xs font-bold text-white/60">
@@ -586,7 +583,7 @@ export default async function LessonWatchPage({
 
                 <div className="h-2 overflow-hidden rounded-full bg-white/10">
                   <div
-                    className="h-full rounded-full bg-gradient-to-l from-[var(--brand-400)] to-[var(--accent-500)]"
+                    className="h-full rounded-full bg-[var(--accent-500)]"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -603,7 +600,7 @@ export default async function LessonWatchPage({
                   key={section.id}
                   className="rounded-[1.25rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4"
                 >
-                  <h4 className="mb-3 font-extrabold">
+                  <h4 className="mb-3 font-extrabold text-[var(--brand-900)]">
                     {sectionIndex + 1}. {section.title}
                   </h4>
 
@@ -619,11 +616,11 @@ export default async function LessonWatchPage({
                         <Link
                           key={lesson.id}
                           href={`/learn/${course.slug}/${lesson.id}`}
-                          className={`block rounded-2xl px-4 py-3 text-sm font-bold transition ${
+                          className={
                             isCurrentLesson
-                              ? "bg-gradient-to-l from-[var(--accent-400)] via-[var(--accent-500)] to-[var(--brand-700)] text-white shadow-lg shadow-orange-500/20"
-                              : "bg-white text-[var(--foreground)] hover:-translate-y-0.5 hover:shadow-sm"
-                          }`}
+                              ? "block rounded-xl bg-[var(--brand-700)] px-4 py-3 text-sm font-bold text-white shadow-sm"
+                              : "block rounded-xl bg-white px-4 py-3 text-sm font-bold text-[var(--foreground)] transition hover:-translate-y-0.5 hover:shadow-sm"
+                          }
                         >
                           <div className="flex items-center justify-between gap-3">
                             <span className="leading-6">{lesson.title}</span>
@@ -632,7 +629,9 @@ export default async function LessonWatchPage({
                               className={
                                 lessonCompleted
                                   ? "shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700"
-                                  : "shrink-0 text-xs"
+                                  : isCurrentLesson
+                                    ? "shrink-0 text-xs text-white/80"
+                                    : "shrink-0 text-xs text-[var(--text-muted)]"
                               }
                             >
                               {lessonCompleted
