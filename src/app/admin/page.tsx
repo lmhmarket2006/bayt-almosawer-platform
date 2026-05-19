@@ -47,7 +47,8 @@ function getCourseStatusLabel(status: string) {
 }
 
 export default async function AdminDashboardPage() {
-  const user = await requireRole("ADMIN");
+  await requireRole("ADMIN");
+
   const settings = await getPlatformSettings();
   const siteName = settings.siteName || "منصة بيت المصور التعليمية";
 
@@ -64,6 +65,7 @@ export default async function AdminDashboardPage() {
     latestOrders,
     latestUsers,
     latestCourses,
+    paidOrderItems,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({
@@ -154,12 +156,69 @@ export default async function AdminDashboardPage() {
         createdAt: "desc",
       },
     }),
+    prisma.orderItem.findMany({
+      where: {
+        order: {
+          paymentStatus: "PAID",
+        },
+      },
+      select: {
+        price: true,
+        course: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const totalSales = paidOrders.reduce(
     (total, order) => total + Number(order.finalAmount),
     0
   );
+
+  const bestSellingCourses = Object.values(
+    paidOrderItems.reduce<
+      Record<
+        string,
+        {
+          id: string;
+          title: string;
+          slug: string;
+          salesCount: number;
+          totalRevenue: number;
+        }
+      >
+    >((result, item) => {
+      const course = item.course;
+
+      if (!result[course.id]) {
+        result[course.id] = {
+          id: course.id,
+          title: course.title,
+          slug: course.slug,
+          salesCount: 0,
+          totalRevenue: 0,
+        };
+      }
+
+      result[course.id].salesCount += 1;
+      result[course.id].totalRevenue += Number(item.price);
+
+      return result;
+    }, {})
+  )
+    .sort((a, b) => {
+      if (b.salesCount !== a.salesCount) {
+        return b.salesCount - a.salesCount;
+      }
+
+      return b.totalRevenue - a.totalRevenue;
+    })
+    .slice(0, 5);
 
   return (
     <main className="min-h-screen px-5 py-8 sm:px-8 lg:px-20">
@@ -171,11 +230,14 @@ export default async function AdminDashboardPage() {
                 لوحة الإدارة
               </p>
 
-<h1 className="mt-2 text-3xl font-extrabold leading-tight sm:text-4xl">
-  مرحبًا بك في لوحة إدارة {siteName}
-</h1>
+              <h1 className="mt-2 text-3xl font-extrabold leading-tight sm:text-4xl">
+                مرحبًا بك في لوحة إدارة {siteName}
+              </h1>
+
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)]">
-تابع المبيعات، الطلبات، الطلاب، الكورسات، وحالة المحتوى من مكان واحد.              </p>
+                تابع المبيعات، الطلبات، الطلاب، الكورسات، وحالة المحتوى من مكان
+                واحد.
+              </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Link
@@ -297,6 +359,75 @@ export default async function AdminDashboardPage() {
               كورسات مفتوحة للطلاب.
             </p>
           </div>
+        </section>
+
+        <section className="mb-8 rounded-[2rem] border border-[var(--border-soft)] bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="font-bold text-[var(--brand-500)]">
+                أفضل الكورسات مبيعًا
+              </p>
+              <h2 className="mt-1 text-2xl font-extrabold">
+                الكورسات الأعلى أداءً
+              </h2>
+            </div>
+
+            <Link
+              href="/admin/orders"
+              className="hidden text-sm font-extrabold text-[var(--brand-600)] sm:inline-flex"
+            >
+              مراجعة الطلبات ←
+            </Link>
+          </div>
+
+          {bestSellingCourses.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-dashed border-[var(--border-soft)] bg-[var(--surface-soft)] p-8 text-center">
+              <h3 className="text-xl font-extrabold">
+                لا توجد مبيعات مؤكدة بعد
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
+                عندما يتم تأكيد طلبات مدفوعة، ستظهر هنا الكورسات الأكثر مبيعًا.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {bestSellingCourses.map((course, index) => (
+                <div
+                  key={course.id}
+                  className="rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4"
+                >
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand-400)] to-[var(--accent-500)] text-sm font-extrabold text-white">
+                      {index + 1}
+                    </span>
+
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--brand-600)]">
+                      {course.salesCount} مبيع
+                    </span>
+                  </div>
+
+                  <h3 className="line-clamp-2 min-h-12 font-extrabold leading-6">
+                    {course.title}
+                  </h3>
+
+                  <p className="mt-3 text-sm font-bold text-[var(--text-muted)]">
+                    إجمالي المبيعات
+                  </p>
+
+                  <p className="mt-1 text-xl font-extrabold text-[var(--brand-900)]">
+                    {formatPrice(course.totalRevenue)}
+                  </p>
+
+                  <Link
+                    href={`/courses/${course.slug}`}
+                    className="mt-4 inline-flex text-sm font-extrabold text-[var(--brand-600)] transition hover:text-[var(--accent-500)]"
+                  >
+                    معاينة الكورس ←
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mb-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
