@@ -333,13 +333,33 @@ export default async function CoursesPage() {
                     key={course.id}
                     className="group overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl"
                   >
-                    <div className="relative mb-5 flex h-48 items-end overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-[var(--brand-950)] via-[var(--brand-700)] to-[var(--accent-500)] p-4">
-                      <div className="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-[var(--brand-400)]/30 blur-2xl" />
-                      <div className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-[var(--accent-500)]/30 blur-2xl" />
+                    <div className="relative mb-5 h-48 overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-[var(--brand-950)] via-[var(--brand-700)] to-[var(--accent-500)]">
+                      {course.thumbnailUrl ? (
+                        <Image
+                          src={course.thumbnailUrl}
+                          alt={course.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-cover transition duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <>
+                          <div className="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-[var(--brand-400)]/30 blur-2xl" />
+                          <div className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-[var(--accent-500)]/30 blur-2xl" />
+                        </>
+                      )}
 
-                      <span className="relative rounded-full bg-white/15 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
-                        {course.category?.name ?? "كورس"}
-                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+
+                      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3">
+                        <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
+                          {course.category?.name ?? "كورس"}
+                        </span>
+
+                        <span className="rounded-full bg-black/25 px-3 py-1 text-xs font-extrabold text-white backdrop-blur">
+                          {lessonsCount} درس
+                        </span>
+                      </div>
                     </div>
 
                     <div className="mb-3 flex items-center justify-between gap-3">
