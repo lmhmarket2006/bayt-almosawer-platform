@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "seed:base": "tsx scripts/seed-production-base.ts",
     "seed:taswerak": "tsx scripts/seed-taswerak-courses.ts",
     "cleanup:taswerak": "tsx scripts/cleanup-taswerak-courses.ts",
-    "railway:predeploy": "prisma migrate deploy && npm run seed:taswerak && npm run cleanup:taswerak"
+    "railway:fresh-seed": "prisma migrate deploy && npm run seed:base && npm run seed:taswerak",
+    "railway:predeploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
