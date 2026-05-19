@@ -2,13 +2,14 @@
   "name": "bayt-almosawer-platform",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "seed:taswerak": "tsx scripts/seed-taswerak-courses.ts",
+  "cleanup:taswerak": "tsx scripts/cleanup-taswerak-courses.ts"
+}  "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
