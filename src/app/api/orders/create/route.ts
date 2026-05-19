@@ -31,80 +31,160 @@ function redirectWithQuery(
   return NextResponse.redirect(url);
 }
 
+function getCourseAmount(course: { price: unknown; salePrice: unknown }) {
+  const salePrice = course.salePrice === null ? null : Number(course.salePrice);
+  const price = Number(course.price);
+
+  const amount = salePrice !== null ? salePrice : price;
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return null;
+  }
+
+  return amount;
+}
+
+// لو تم فتح رابط API مباشرة من المتصفح
+export async function GET(request: NextRequest) {
+  return redirectWithQuery(request, "/courses", {
+    error: "use-buy-button",
+  });
+}
+
 export async function POST(request: NextRequest) {
-  const user = await requireUser();
+  try {
+    const user = await requireUser();
 
-  const formData = await request.formData();
-  const courseId = String(formData.get("courseId") || "").trim();
+    const formData = await request.formData();
+    const courseId = String(formData.get("courseId") || "").trim();
 
-  if (!courseId) {
-    return redirectWithQuery(request, "/courses", {
-      error: "missing-course",
+    if (!courseId) {
+      return redirectWithQuery(request, "/courses", {
+        error: "missing-course",
+      });
+    }
+
+    const course = await prisma.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        price: true,
+        salePrice: true,
+        isPublished: true,
+        status: true,
+      },
     });
-  }
 
-  const course = await prisma.course.findUnique({
-    where: {
-      id: courseId,
-    },
-  });
+    if (!course || !course.isPublished || course.status !== "PUBLISHED") {
+      return redirectWithQuery(request, "/courses", {
+        error: "course-not-available",
+      });
+    }
 
-  if (!course || !course.isPublished || course.status !== "PUBLISHED") {
-    return redirectWithQuery(request, "/courses", {
-      error: "course-not-available",
+    const existingEnrollment = await prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId: user.id,
+          courseId: course.id,
+        },
+      },
+      select: {
+        id: true,
+        isActive: true,
+      },
     });
-  }
 
-  const existingEnrollment = await prisma.enrollment.findUnique({
-    where: {
-      userId_courseId: {
+    if (existingEnrollment?.isActive) {
+      return redirectTo(request, `/learn/${course.slug}`);
+    }
+
+    const existingPendingOrder = await prisma.order.findFirst({
+      where: {
         userId: user.id,
-        courseId: course.id,
-      },
-    },
-  });
-
-  if (existingEnrollment?.isActive) {
-    return redirectTo(request, `/learn/${course.slug}`);
-  }
-
-  const existingPendingOrder = await prisma.order.findFirst({
-    where: {
-      userId: user.id,
-      paymentStatus: "PENDING",
-      items: {
-        some: {
-          courseId: course.id,
+        paymentStatus: "PENDING",
+        items: {
+          some: {
+            courseId: course.id,
+          },
         },
       },
-    },
-  });
+      select: {
+        id: true,
+      },
+    });
 
-  if (existingPendingOrder) {
+    if (existingPendingOrder) {
+      return redirectWithQuery(request, "/student/orders", {
+        message: "already-pending",
+      });
+    }
+
+    const existingPaidOrConfirmedOrder = await prisma.order.findFirst({
+      where: {
+        userId: user.id,
+        OR: [
+          {
+            paymentStatus: "PAID",
+          },
+          {
+            orderStatus: "CONFIRMED",
+          },
+        ],
+        items: {
+          some: {
+            courseId: course.id,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingPaidOrConfirmedOrder) {
+      return redirectWithQuery(request, "/student/orders", {
+        message: "already-purchased",
+      });
+    }
+
+    const amount = getCourseAmount(course);
+
+    if (amount === null) {
+      return redirectWithQuery(request, `/courses/${course.slug}`, {
+        error: "invalid-course-price",
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.order.create({
+        data: {
+          userId: user.id,
+          totalAmount: amount,
+          finalAmount: amount,
+          paymentStatus: "PENDING",
+          orderStatus: "PENDING",
+          items: {
+            create: {
+              courseId: course.id,
+              price: amount,
+            },
+          },
+        },
+      });
+    });
+
     return redirectWithQuery(request, "/student/orders", {
-      message: "already-pending",
+      message: "created",
+    });
+  } catch (error) {
+    console.error("Create order error:", error);
+
+    return redirectWithQuery(request, "/courses", {
+      error: "create-order-failed",
     });
   }
-
-  const amount = course.salePrice ?? course.price;
-
-  await prisma.order.create({
-    data: {
-      userId: user.id,
-      totalAmount: amount,
-      finalAmount: amount,
-      paymentStatus: "PENDING",
-      orderStatus: "PENDING",
-      items: {
-        create: {
-          courseId: course.id,
-          price: amount,
-        },
-      },
-    },
-  });
-
-  return redirectWithQuery(request, "/student/orders", {
-    message: "created",
-  });
 }
