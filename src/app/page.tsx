@@ -219,11 +219,11 @@ export default async function HomePage() {
               </Link>
 
               <Link
-                href="/register"
-                className="rounded-xl border border-white/20 bg-white px-7 py-4 text-center text-base font-extrabold text-slate-950 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100"
-              >
-                إنشاء حساب طالب
-              </Link>
+  href="/register"
+  className="rounded-xl border border-white/35 bg-transparent px-6 py-4 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[var(--brand-300)] hover:bg-white/10"
+>
+  إنشاء حساب
+</Link>
             </div>
 
             <div className="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
@@ -510,13 +510,12 @@ export default async function HomePage() {
                 تصفح الكورسات
               </Link>
 
-              <Link
-                href="/register"
-                className="rounded-xl border border-white/20 bg-white px-6 py-4 text-center text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-100"
-              >
-                إنشاء حساب
-              </Link>
-            </div>
+<Link
+  href="/register"
+  className="rounded-xl border border-white/35 bg-transparent px-6 py-4 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[var(--brand-300)] hover:bg-white/10"
+>
+  إنشاء حساب
+</Link>            </div>
           </div>
         </div>
       </section>
