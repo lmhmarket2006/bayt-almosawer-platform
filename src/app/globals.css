@@ -28,6 +28,34 @@
   --text-muted: #6b7280;
 }
 
+html.dark {
+  --background: #0b1120;
+  --foreground: #f8fafc;
+
+  --brand-950: #020617;
+  --brand-900: #0f172a;
+  --brand-800: #1e293b;
+  --brand-700: #14b8a6;
+  --brand-600: #2dd4bf;
+  --brand-500: #5eead4;
+  --brand-400: #99f6e4;
+  --brand-300: #ccfbf1;
+  --brand-200: #d9fff7;
+  --brand-100: #eafffb;
+  --brand-50: #102a2e;
+
+  --accent-700: #fb923c;
+  --accent-600: #f97316;
+  --accent-500: #ff8a3d;
+  --accent-400: #fdba74;
+
+  --surface: #111827;
+  --surface-soft: #1f2937;
+  --border-soft: #334155;
+
+  --text-muted: #cbd5e1;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -45,6 +73,14 @@ body {
   font-family: var(--font-almarai), Arial, Helvetica, sans-serif;
 }
 
+html.dark body {
+  background:
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 32%),
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.12), transparent 26%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 1)),
+    var(--background);
+}
+
 a {
   text-decoration: none;
   color: inherit;
@@ -60,4 +96,9 @@ select {
 ::selection {
   background: rgba(249, 115, 22, 0.2);
   color: var(--foreground);
+}
+
+html.dark ::selection {
+  background: rgba(45, 212, 191, 0.28);
+  color: #ffffff;
 }

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getPlatformSiteName } from "@/lib/platform-settings";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -122,7 +123,7 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-white/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-white/95 backdrop-blur-xl dark:bg-[var(--surface)]/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-20">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-14 w-24 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[var(--border-soft)]">
@@ -167,12 +168,16 @@ export default async function HomePage() {
             </Link>
           </nav>
 
-          <Link
-            href="/courses"
-            className="rounded-xl bg-[var(--accent-500)] px-4 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
-          >
-            ابدأ التعلم
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+
+            <Link
+              href="/courses"
+              className="rounded-xl bg-[var(--accent-500)] px-4 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
+            >
+              ابدأ التعلم
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -219,11 +224,11 @@ export default async function HomePage() {
               </Link>
 
               <Link
-  href="/register"
-  className="rounded-xl border border-white/35 bg-transparent px-6 py-4 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[var(--brand-300)] hover:bg-white/10"
->
-  إنشاء حساب
-</Link>
+                href="/register"
+                className="rounded-xl border border-white/35 bg-transparent px-7 py-4 text-center text-base font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[var(--brand-300)] hover:bg-white/10"
+              >
+                إنشاء حساب طالب
+              </Link>
             </div>
 
             <div className="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
@@ -301,7 +306,7 @@ export default async function HomePage() {
               <Link
                 key={track}
                 href="/courses"
-                className="rounded-2xl border border-[var(--border-soft)] bg-white p-4 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)] hover:text-[var(--brand-700)]"
+                className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface)] p-4 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)] hover:text-[var(--brand-700)]"
               >
                 {track}
               </Link>
@@ -315,7 +320,7 @@ export default async function HomePage() {
           {platformFeatures.map((feature) => (
             <div
               key={feature.title}
-              className="group rounded-2xl border border-[var(--border-soft)] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+              className="group rounded-2xl border border-[var(--border-soft)] bg-[var(--surface)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-50)] transition group-hover:scale-105">
                 <span className="h-3 w-3 rounded-full bg-[var(--brand-600)]" />
@@ -333,7 +338,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white px-5 py-14 sm:px-8 lg:px-20">
+      <section className="bg-[var(--surface)] px-5 py-14 sm:px-8 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-8 flex items-end justify-between gap-4">
             <div>
@@ -357,7 +362,7 @@ export default async function HomePage() {
           </div>
 
           {featuredCourses.length === 0 ? (
-            <div className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-8 text-center shadow-sm">
+            <div className="rounded-[2rem] border border-[var(--border-soft)] bg-[var(--surface)] p-8 text-center shadow-sm">
               <h3 className="text-2xl font-extrabold">
                 لا توجد كورسات منشورة بعد
               </h3>
@@ -376,7 +381,7 @@ export default async function HomePage() {
                 return (
                   <article
                     key={course.id}
-                    className="group overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    className="group overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-[var(--surface)] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                   >
                     <Link
                       href={`/courses/${course.slug}`}
@@ -464,7 +469,7 @@ export default async function HomePage() {
             {testimonials.map((testimonial) => (
               <div
                 key={testimonial.name}
-                className="rounded-2xl border border-[var(--border-soft)] bg-white p-6 shadow-sm"
+                className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface)] p-6 shadow-sm"
               >
                 <div className="mb-4 flex gap-1 text-lg text-amber-400">
                   ★★★★★
@@ -510,17 +515,18 @@ export default async function HomePage() {
                 تصفح الكورسات
               </Link>
 
-<Link
-  href="/register"
-  className="rounded-xl border border-white/35 bg-transparent px-6 py-4 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[var(--brand-300)] hover:bg-white/10"
->
-  إنشاء حساب
-</Link>            </div>
+              <Link
+                href="/register"
+                className="rounded-xl border border-white/35 bg-transparent px-6 py-4 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:border-[var(--brand-300)] hover:bg-white/10"
+              >
+                إنشاء حساب
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-[var(--border-soft)] bg-white px-5 py-10 sm:px-8 lg:px-20">
+      <footer className="border-t border-[var(--border-soft)] bg-[var(--surface)] px-5 py-10 sm:px-8 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
           <div>
             <div className="flex items-center gap-3">
