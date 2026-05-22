@@ -147,25 +147,34 @@ export default async function HomePage() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-bold text-[var(--text-muted)] md:flex">
-            <Link
-              href="/"
-              className="text-[var(--brand-700)] transition hover:text-[var(--brand-600)]"
-            >
-              الرئيسية
-            </Link>
-            <Link
-              href="/courses"
-              className="transition hover:text-[var(--brand-600)]"
-            >
-              الكورسات
-            </Link>
-            <Link
-              href="/login"
-              className="transition hover:text-[var(--brand-600)]"
-            >
-              تسجيل الدخول
-            </Link>
-          </nav>
+  <Link
+    href="/"
+    className="text-[var(--brand-700)] transition hover:text-[var(--brand-600)]"
+  >
+    الرئيسية
+  </Link>
+
+  <Link
+    href="/courses"
+    className="transition hover:text-[var(--brand-600)]"
+  >
+    الكورسات
+  </Link>
+
+  <Link
+    href="/instructor/apply"
+    className="transition hover:text-[var(--brand-600)]"
+  >
+    انضم كمدرب
+  </Link>
+
+  <Link
+    href="/login"
+    className="transition hover:text-[var(--brand-600)]"
+  >
+    تسجيل الدخول
+  </Link>
+</nav>
 
           <Link
             href="/courses"
@@ -553,11 +562,12 @@ export default async function HomePage() {
           <div>
             <h4 className="font-extrabold text-[var(--brand-900)]">المنصة</h4>
             <div className="mt-4 grid gap-3 text-sm font-bold text-[var(--text-muted)]">
-              <Link href="/">الرئيسية</Link>
-              <Link href="/courses">الكورسات</Link>
-              <Link href="/login">تسجيل الدخول</Link>
-              <Link href="/register">إنشاء حساب</Link>
-            </div>
+  <Link href="/">الرئيسية</Link>
+  <Link href="/courses">الكورسات</Link>
+  <Link href="/instructor/apply">انضم كمدرب</Link>
+  <Link href="/login">تسجيل الدخول</Link>
+  <Link href="/register">إنشاء حساب</Link>
+</div>
           </div>
 
           <div>
