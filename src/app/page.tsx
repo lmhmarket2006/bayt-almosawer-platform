@@ -179,7 +179,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/course_images/course_05_beauty_photography.jpg"
+            src="/hero-images/homepage-hero-studio.png"
             alt="تعلم التصوير الاحترافي"
             fill
             sizes="100vw"
@@ -249,7 +249,7 @@ export default async function HomePage() {
             <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-white p-4 shadow-2xl">
               <div className="relative h-[430px] overflow-hidden rounded-[1.5rem] bg-[var(--surface-soft)]">
                 <Image
-                  src="/course_images/course_03_food_photography.jpg"
+                  src="/hero-images/homepage-hero-studio.png"
                   alt="كورسات تصوير احترافية"
                   fill
                   sizes="45vw"
