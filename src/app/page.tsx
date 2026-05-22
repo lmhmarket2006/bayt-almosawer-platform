@@ -27,41 +27,71 @@ function getLevelLabel(level: string) {
 
 const platformFeatures = [
   {
-    title: "تعلم بصري احترافي",
+    title: "تعلم عملي خطوة بخطوة",
     description:
-      "كورسات عربية منظمة في التصوير، الإضاءة، وصناعة المحتوى بأسلوب واضح وتطبيقي.",
+      "كورسات تصوير وصناعة محتوى مبنية على التطبيق العملي، وليست مجرد شرح نظري.",
   },
   {
-    title: "رحلة شراء سهلة",
+    title: "مدربون متخصصون",
     description:
-      "اختر الكورس، أنشئ طلب شراء، ثم يتم فتح المحتوى داخل حسابك بعد تأكيد الإدارة.",
+      "تعلّم من خبرات عملية في تصوير المنتجات، الميكب، البورتريه، الطعام، والريتاتش.",
   },
   {
-    title: "لوحة تعلم محمية",
+    title: "محتوى منظم للموبايل",
     description:
-      "كل طالب يشاهد فقط الكورسات المفتوحة له مع دروس ومرفقات منظمة.",
+      "تجربة تعلم سهلة على الجوال والكمبيوتر، مع دروس مرتبة ومرفقات لكل كورس.",
   },
   {
-    title: "محتوى قابل للتطبيق",
+    title: "فتح الكورسات بعد التأكيد",
     description:
-      "دروس عملية تساعدك على تحسين تصويرك ومحتواك خطوة بخطوة.",
+      "أنشئ طلبك، وبعد تأكيد الإدارة يتم فتح الكورس داخل حسابك مباشرة.",
   },
 ];
 
-const learningSteps = [
-  "اختر الكورس المناسب لهدفك",
-  "أنشئ حساب طالب وطلب شراء",
-  "أرسل إثبات الدفع للإدارة",
-  "ابدأ التعلم ومتابعة تقدمك",
-];
-
-const categoryHighlights = [
+const learningTracks = [
   "تصوير الميكب",
   "تصوير الأطعمة",
   "Beauty Photography",
   "High-End Retouching",
   "تصوير البورتريه",
   "إضاءة الاستديو",
+];
+
+const testimonials = [
+  {
+    name: "سارة محمد",
+    role: "مصورة مبتدئة",
+    text: "طريقة الشرح منظمة جدًا وساعدتني أفهم الإضاءة والتكوين بشكل عملي. حسيت أن الكورس معمول للمصور العربي فعلًا.",
+  },
+  {
+    name: "عبدالله فهد",
+    role: "صانع محتوى",
+    text: "أكثر شيء أعجبني أن الدروس قصيرة وواضحة، والتطبيقات عملية. قدرت أطور جودة صوري ومحتواي بسرعة.",
+  },
+  {
+    name: "نورة أحمد",
+    role: "صاحبة متجر",
+    text: "كورسات تصوير المنتجات ساعدتني أطلع صور أفضل لمتجري بدون تعقيد. التجربة بسيطة ومناسبة للموبايل.",
+  },
+];
+
+const stats = [
+  {
+    value: "100%",
+    label: "محتوى عربي",
+  },
+  {
+    value: "6+",
+    label: "مسارات تصوير",
+  },
+  {
+    value: "HD",
+    label: "تجربة مشاهدة",
+  },
+  {
+    value: "24/7",
+    label: "وصول للمحتوى",
+  },
 ];
 
 export default async function HomePage() {
@@ -141,163 +171,103 @@ export default async function HomePage() {
             href="/courses"
             className="rounded-xl bg-[var(--accent-500)] px-4 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
           >
-            ابدأ الآن
+            ابدأ التعلم
           </Link>
         </div>
       </header>
 
-      <section className="relative overflow-hidden px-5 py-12 sm:px-8 lg:px-20 lg:py-20">
-        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[var(--brand-400)]/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-24 top-20 h-72 w-72 rounded-full bg-[var(--accent-500)]/10 blur-3xl" />
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/course_images/course_05_beauty_photography.jpg"
+            alt="تعلم التصوير الاحترافي"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-[var(--brand-950)]/80" />
+          <div className="absolute inset-0 bg-gradient-to-l from-[var(--brand-950)] via-[var(--brand-950)]/85 to-[var(--brand-950)]/45" />
+        </div>
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white px-4 py-2 text-sm font-extrabold text-[var(--brand-700)] shadow-sm">
+        <div className="relative mx-auto grid min-h-[680px] max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-20 lg:py-24">
+          <div className="text-white">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-extrabold text-white shadow-sm backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-[var(--accent-500)]" />
-              منصة عربية متخصصة في تعليم التصوير
+              أول منصة عربية متخصصة في تعليم التصوير العملي
             </div>
 
-            <h2 className="max-w-4xl text-4xl font-extrabold leading-tight text-[var(--brand-900)] sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
               تعلّم التصوير وصناعة المحتوى
-              <span className="block text-[var(--brand-700)]">
-                بخطة عملية تقودك للاحتراف
+              <span className="block text-[var(--brand-300)]">
+                من الأساسيات إلى الاحتراف
               </span>
-            </h2>
+            </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-9 text-[var(--text-muted)]">
-              {siteName} تقدم كورسات عربية منظمة في التصوير، الإضاءة،
-              الريتاتش، وصناعة المحتوى؛ مع تجربة تعلم واضحة ومناسبة للموبايل
-              ولوحة طالب مخصصة.
+            <p className="mt-6 max-w-2xl text-lg font-bold leading-9 text-white/75">
+              كورسات عربية عملية في تصوير الميكب، الأطعمة، البورتريه، الإضاءة،
+              والريتاتش — بتجربة تعليمية منظمة تشبه المنصات العالمية ومناسبة
+              للموبايل.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/courses"
-                className="rounded-xl bg-[var(--accent-500)] px-7 py-4 text-center text-base font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
+                className="rounded-xl bg-[var(--accent-500)] px-7 py-4 text-center text-base font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
               >
                 تصفّح الكورسات
               </Link>
 
               <Link
                 href="/register"
-                className="rounded-xl border border-[var(--border-soft)] bg-white px-7 py-4 text-center text-base font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)]"
+                className="rounded-xl border border-white/20 bg-white px-7 py-4 text-center text-base font-extrabold text-[var(--brand-950)] shadow-sm transition hover:-translate-y-0.5"
               >
                 إنشاء حساب طالب
               </Link>
             </div>
 
             <div className="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4 text-center shadow-sm">
-                <div className="text-2xl font-extrabold text-[var(--brand-700)]">
-                  {featuredCourses.length}
+              {stats.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-white/15 bg-white/10 p-4 text-center backdrop-blur"
+                >
+                  <div className="text-2xl font-extrabold text-white">
+                    {item.value}
+                  </div>
+                  <div className="mt-1 text-xs font-bold text-white/65">
+                    {item.label}
+                  </div>
                 </div>
-                <div className="mt-1 text-xs font-bold text-[var(--text-muted)]">
-                  كورسات مميزة
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4 text-center shadow-sm">
-                <div className="text-2xl font-extrabold text-[var(--brand-700)]">
-                  100%
-                </div>
-                <div className="mt-1 text-xs font-bold text-[var(--text-muted)]">
-                  تجربة عربية
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4 text-center shadow-sm">
-                <div className="text-2xl font-extrabold text-[var(--brand-700)]">
-                  PDF
-                </div>
-                <div className="mt-1 text-xs font-bold text-[var(--text-muted)]">
-                  مرفقات عملية
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-4 text-center shadow-sm">
-                <div className="text-2xl font-extrabold text-[var(--brand-700)]">
-                  UX
-                </div>
-                <div className="mt-1 text-xs font-bold text-[var(--text-muted)]">
-                  موبايل أولًا
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -inset-4 rounded-[2.5rem] bg-[var(--brand-400)]/10 blur-2xl" />
+          <div className="relative hidden lg:block">
+            <div className="absolute -inset-4 rounded-[2.5rem] bg-white/10 blur-2xl" />
 
-            <div className="relative overflow-hidden rounded-[2rem] border border-[var(--border-soft)] bg-white p-4 shadow-xl">
-              <div className="rounded-[1.5rem] bg-[var(--brand-950)] p-6 text-white">
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-bold text-white/60">
-                      رحلة الطالب
-                    </p>
-                    <h3 className="mt-1 text-2xl font-extrabold">
-                      من اختيار الكورس إلى التعلم
-                    </h3>
-                  </div>
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-white p-4 shadow-2xl">
+              <div className="relative h-[430px] overflow-hidden rounded-[1.5rem] bg-[var(--surface-soft)]">
+                <Image
+                  src="/course_images/course_03_food_photography.jpg"
+                  alt="كورسات تصوير احترافية"
+                  fill
+                  sizes="45vw"
+                  className="object-cover"
+                  priority
+                />
 
-                  <div className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">
-                    تجربة كاملة
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                <div className="mb-6 flex justify-center rounded-[1.25rem] bg-white p-5">
-                  <Image
-                    src="/logo-taswerak.png"
-                    alt={siteName}
-                    width={360}
-                    height={200}
-                    className="h-32 w-auto object-contain"
-                    priority
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  {learningSteps.map((step, index) => (
-                    <div
-                      key={step}
-                      className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-500)] text-sm font-extrabold text-white">
-                          {index + 1}
-                        </div>
-                        <p className="font-extrabold">{step}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-3 p-4 sm:grid-cols-3">
-                <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-                  <p className="text-xs font-bold text-[var(--text-muted)]">
-                    محتوى
+                <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-white/95 p-5 shadow-sm backdrop-blur">
+                  <p className="text-xs font-extrabold text-[var(--brand-700)]">
+                    تجربة تعليمية احترافية
                   </p>
-                  <p className="mt-1 font-extrabold text-[var(--brand-900)]">
-                    فيديو + مرفقات
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-                  <p className="text-xs font-bold text-[var(--text-muted)]">
-                    دفع
-                  </p>
-                  <p className="mt-1 font-extrabold text-[var(--brand-900)]">
-                    تحويل يدوي
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-                  <p className="text-xs font-bold text-[var(--text-muted)]">
-                    متابعة
-                  </p>
-                  <p className="mt-1 font-extrabold text-[var(--brand-900)]">
-                    تقدم الطالب
+                  <h2 className="mt-2 text-2xl font-extrabold text-[var(--brand-950)]">
+                    تعلم بالصور، الفيديو، المرفقات، والتطبيق العملي
+                  </h2>
+                  <p className="mt-3 text-sm font-bold leading-7 text-[var(--text-muted)]">
+                    كل كورس مصمم ليأخذك من الفهم إلى التطبيق بخطوات واضحة.
                   </p>
                 </div>
               </div>
@@ -306,16 +276,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="px-5 pb-8 sm:px-8 lg:px-20">
+      <section className="px-5 py-12 sm:px-8 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <p className="font-bold text-[var(--brand-500)]">
                 مسارات تعليمية
               </p>
-              <h3 className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
+              <h2 className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
                 اختر المجال الذي يناسب هدفك
-              </h3>
+              </h2>
             </div>
 
             <Link
@@ -327,27 +297,27 @@ export default async function HomePage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {categoryHighlights.map((category) => (
+            {learningTracks.map((track) => (
               <Link
-                key={category}
+                key={track}
                 href="/courses"
                 className="rounded-2xl border border-[var(--border-soft)] bg-white p-4 text-center text-sm font-extrabold text-[var(--brand-900)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-400)] hover:text-[var(--brand-700)]"
               >
-                {category}
+                {track}
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-5 pb-8 pt-6 sm:px-8 lg:px-20">
+      <section className="px-5 pb-12 sm:px-8 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-4">
           {platformFeatures.map((feature) => (
             <div
               key={feature.title}
               className="group rounded-2xl border border-[var(--border-soft)] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-50)] text-[var(--brand-700)] transition group-hover:scale-105">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-50)] transition group-hover:scale-105">
                 <span className="h-3 w-3 rounded-full bg-[var(--brand-600)]" />
               </div>
 
@@ -363,16 +333,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="px-5 pb-16 pt-6 sm:px-8 lg:px-20">
+      <section className="bg-white px-5 py-14 sm:px-8 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-8 flex items-end justify-between gap-4">
             <div>
               <p className="font-bold text-[var(--brand-500)]">
                 الكورسات المميزة
               </p>
-              <h3 className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
+              <h2 className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
                 ابدأ رحلتك التعليمية من هنا
-              </h3>
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm font-bold leading-7 text-[var(--text-muted)]">
+                اختر من الكورسات المختارة وابدأ التعلم بخطوات عملية واضحة.
+              </p>
             </div>
 
             <Link
@@ -385,9 +358,9 @@ export default async function HomePage() {
 
           {featuredCourses.length === 0 ? (
             <div className="rounded-[2rem] border border-[var(--border-soft)] bg-white p-8 text-center shadow-sm">
-              <h4 className="text-2xl font-extrabold">
+              <h3 className="text-2xl font-extrabold">
                 لا توجد كورسات منشورة بعد
-              </h4>
+              </h3>
               <p className="mt-3 text-sm text-[var(--text-muted)]">
                 سيتم عرض الكورسات هنا بعد نشرها من لوحة الإدارة.
               </p>
@@ -440,13 +413,13 @@ export default async function HomePage() {
                       </div>
 
                       <Link href={`/courses/${course.slug}`}>
-                        <h4 className="line-clamp-2 min-h-14 text-xl font-extrabold leading-7 text-[var(--brand-900)] transition group-hover:text-[var(--brand-700)]">
+                        <h3 className="min-h-14 text-xl font-extrabold leading-7 text-[var(--brand-900)] transition group-hover:text-[var(--brand-700)]">
                           {course.title}
-                        </h4>
+                        </h3>
                       </Link>
 
                       {course.subtitle ? (
-                        <p className="mt-3 line-clamp-2 min-h-14 text-sm leading-7 text-[var(--text-muted)]">
+                        <p className="mt-3 min-h-14 text-sm leading-7 text-[var(--text-muted)]">
                           {course.subtitle}
                         </p>
                       ) : null}
@@ -471,6 +444,154 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      <section className="px-5 py-14 sm:px-8 lg:px-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-10 max-w-3xl text-center">
+            <p className="font-bold text-[var(--brand-500)]">
+              آراء المشتركين
+            </p>
+            <h2 className="mt-2 text-3xl font-extrabold text-[var(--brand-900)]">
+              تجربة تعلم يثق بها المصورون وصناع المحتوى
+            </h2>
+            <p className="mt-3 text-sm font-bold leading-7 text-[var(--text-muted)]">
+              آراء تجريبية يمكن استبدالها لاحقًا بآراء حقيقية من الطلاب بعد
+              الإطلاق.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {testimonials.map((testimonial) => (
+              <div
+                key={testimonial.name}
+                className="rounded-2xl border border-[var(--border-soft)] bg-white p-6 shadow-sm"
+              >
+                <div className="mb-4 flex gap-1 text-lg text-amber-400">
+                  ★★★★★
+                </div>
+
+                <p className="text-sm font-bold leading-8 text-[var(--text-muted)]">
+                  “{testimonial.text}”
+                </p>
+
+                <div className="mt-5 border-t border-[var(--border-soft)] pt-4">
+                  <p className="font-extrabold text-[var(--brand-900)]">
+                    {testimonial.name}
+                  </p>
+                  <p className="mt-1 text-xs font-bold text-[var(--text-muted)]">
+                    {testimonial.role}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-14 sm:px-8 lg:px-20">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[var(--brand-950)] p-8 text-white shadow-xl lg:p-12">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <p className="font-bold text-white/60">ابدأ الآن</p>
+              <h2 className="mt-3 text-3xl font-extrabold lg:text-4xl">
+                جاهز تطور تصويرك ومحتواك؟
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm font-bold leading-8 text-white/65">
+                اختر الكورس المناسب، أنشئ حسابك، وابدأ رحلة تعلم منظمة تساعدك
+                على إنتاج صور وفيديوهات أكثر احترافية.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
+              <Link
+                href="/courses"
+                className="rounded-xl bg-[var(--accent-500)] px-6 py-4 text-center text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[var(--accent-600)]"
+              >
+                تصفح الكورسات
+              </Link>
+
+              <Link
+                href="/register"
+                className="rounded-xl border border-white/20 bg-white px-6 py-4 text-center text-sm font-extrabold text-[var(--brand-950)] transition hover:-translate-y-0.5"
+              >
+                إنشاء حساب
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-[var(--border-soft)] bg-white px-5 py-10 sm:px-8 lg:px-20">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-24 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[var(--border-soft)]">
+                <Image
+                  src="/logo-taswerak.png"
+                  alt={siteName}
+                  width={220}
+                  height={120}
+                  className="h-full w-full object-contain p-1.5"
+                />
+              </div>
+
+              <div>
+                <h3 className="font-extrabold text-[var(--brand-900)]">
+                  {siteName}
+                </h3>
+                <p className="text-xs font-bold text-[var(--text-muted)]">
+                  منصة تعليم التصوير وصناعة المحتوى
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-5 max-w-md text-sm font-bold leading-8 text-[var(--text-muted)]">
+              منصة عربية تساعد المصورين وصناع المحتوى على تطوير مهاراتهم من
+              خلال كورسات عملية منظمة وتجربة تعلم احترافية.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-extrabold text-[var(--brand-900)]">المنصة</h4>
+            <div className="mt-4 grid gap-3 text-sm font-bold text-[var(--text-muted)]">
+              <Link href="/">الرئيسية</Link>
+              <Link href="/courses">الكورسات</Link>
+              <Link href="/login">تسجيل الدخول</Link>
+              <Link href="/register">إنشاء حساب</Link>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-extrabold text-[var(--brand-900)]">روابط مهمة</h4>
+            <div className="mt-4 grid gap-3 text-sm font-bold text-[var(--text-muted)]">
+              <Link href="/privacy">سياسة الخصوصية</Link>
+              <Link href="/terms">الشروط والأحكام</Link>
+              <Link href="/refund-policy">سياسة الاسترجاع</Link>
+              <Link href="/contact">تواصل معنا</Link>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-extrabold text-[var(--brand-900)]">ابدأ التعلم</h4>
+            <p className="mt-4 text-sm font-bold leading-7 text-[var(--text-muted)]">
+              تصفح الكورسات واختر المسار المناسب لهدفك في التصوير وصناعة
+              المحتوى.
+            </p>
+
+            <Link
+              href="/courses"
+              className="mt-5 inline-flex rounded-xl bg-[var(--brand-700)] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[var(--brand-600)]"
+            >
+              عرض الكورسات
+            </Link>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-8 flex max-w-7xl flex-col justify-between gap-3 border-t border-[var(--border-soft)] pt-6 text-xs font-bold text-[var(--text-muted)] sm:flex-row">
+          <p>© {new Date().getFullYear()} {siteName}. جميع الحقوق محفوظة.</p>
+          <p>تصميم وتجربة تعليمية عربية احترافية.</p>
+        </div>
+      </footer>
     </main>
   );
 }
