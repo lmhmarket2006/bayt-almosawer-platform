@@ -220,7 +220,7 @@ export default async function HomePage() {
 
               <Link
                 href="/register"
-                className="rounded-xl border border-white/20 bg-white px-7 py-4 text-center text-base font-extrabold text-[var(--brand-950)] shadow-sm transition hover:-translate-y-0.5"
+                className="rounded-xl border border-white/20 bg-white px-7 py-4 text-center text-base font-extrabold text-slate-950 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-100"
               >
                 إنشاء حساب طالب
               </Link>
@@ -275,7 +275,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
+      
       <section className="px-5 py-12 sm:px-8 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -512,7 +512,7 @@ export default async function HomePage() {
 
               <Link
                 href="/register"
-                className="rounded-xl border border-white/20 bg-white px-6 py-4 text-center text-sm font-extrabold text-[var(--brand-950)] transition hover:-translate-y-0.5"
+                className="rounded-xl border border-white/20 bg-white px-6 py-4 text-center text-sm font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-100"
               >
                 إنشاء حساب
               </Link>
@@ -562,7 +562,9 @@ export default async function HomePage() {
           </div>
 
           <div>
-            <h4 className="font-extrabold text-[var(--brand-900)]">روابط مهمة</h4>
+            <h4 className="font-extrabold text-[var(--brand-900)]">
+              روابط مهمة
+            </h4>
             <div className="mt-4 grid gap-3 text-sm font-bold text-[var(--text-muted)]">
               <Link href="/privacy">سياسة الخصوصية</Link>
               <Link href="/terms">الشروط والأحكام</Link>
@@ -572,7 +574,9 @@ export default async function HomePage() {
           </div>
 
           <div>
-            <h4 className="font-extrabold text-[var(--brand-900)]">ابدأ التعلم</h4>
+            <h4 className="font-extrabold text-[var(--brand-900)]">
+              ابدأ التعلم
+            </h4>
             <p className="mt-4 text-sm font-bold leading-7 text-[var(--text-muted)]">
               تصفح الكورسات واختر المسار المناسب لهدفك في التصوير وصناعة
               المحتوى.
