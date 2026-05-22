@@ -59,6 +59,12 @@ enum LessonResourceType {
   OTHER
 }
 
+enum InstructorApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id           String  @id @default(cuid())
   name         String
@@ -75,6 +81,10 @@ model User {
   orders           Order[]
   enrollments      Enrollment[]
   lessonProgresses LessonProgress[]
+
+  instructorProfile               InstructorProfile?
+  instructorApplications          InstructorApplication[] @relation("InstructorApplicant")
+  reviewedInstructorApplications  InstructorApplication[] @relation("InstructorApplicationReviewer")
 
   @@index([role])
   @@index([isActive])
@@ -282,6 +292,75 @@ model LessonProgress {
   @@index([userId])
   @@index([lessonId])
   @@index([isCompleted])
+}
+
+model InstructorApplication {
+  id String @id @default(cuid())
+
+  applicantId String?
+  applicant   User? @relation("InstructorApplicant", fields: [applicantId], references: [id], onDelete: SetNull)
+
+  name           String
+  email          String
+  phone          String?
+  specialty      String?
+  bio            String? @db.Text
+  experience     String? @db.Text
+  portfolioUrl   String?
+  socialUrl      String?
+  proposedCourse String?
+
+  bankName          String?
+  bankAccountName   String?
+  bankIban          String?
+  payoutNotes       String? @db.Text
+
+  status     InstructorApplicationStatus @default(PENDING)
+  reviewNote String? @db.Text
+
+  reviewedById String?
+  reviewedBy   User? @relation("InstructorApplicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicantId])
+  @@index([email])
+  @@index([status])
+  @@index([reviewedById])
+  @@index([createdAt])
+}
+
+model InstructorProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  displayName String?
+  headline    String?
+  bio         String? @db.Text
+  specialty   String?
+  avatarUrl   String?
+  portfolioUrl String?
+  socialUrl    String?
+
+  bankName          String?
+  bankAccountName   String?
+  bankIban          String?
+  payoutNotes       String? @db.Text
+
+  platformCommissionRate   Decimal @default(30) @db.Decimal(5, 2)
+  instructorCommissionRate Decimal @default(70) @db.Decimal(5, 2)
+
+  isApproved Boolean   @default(false)
+  approvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isApproved])
+  @@index([specialty])
 }
 
 model Setting {
