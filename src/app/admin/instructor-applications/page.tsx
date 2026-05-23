@@ -5,6 +5,13 @@ import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
+type AdminInstructorApplicationsPageProps = {
+  searchParams: Promise<{
+    success?: string;
+    error?: string;
+  }>;
+};
+
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("ar-SA", {
     year: "numeric",
@@ -27,12 +34,9 @@ function getStatusLabel(status: string) {
 
 function getStatusClassName(status: string) {
   const classes: Record<string, string> = {
-    PENDING:
-      "border-amber-200 bg-amber-50 text-amber-800",
-    APPROVED:
-      "border-green-200 bg-green-50 text-green-700",
-    REJECTED:
-      "border-red-200 bg-red-50 text-red-700",
+    PENDING: "border-amber-200 bg-amber-50 text-amber-800",
+    APPROVED: "border-green-200 bg-green-50 text-green-700",
+    REJECTED: "border-red-200 bg-red-50 text-red-700",
   };
 
   return (
@@ -41,8 +45,30 @@ function getStatusClassName(status: string) {
   );
 }
 
-export default async function AdminInstructorApplicationsPage() {
+function getSuccessMessage(success?: string) {
+  const messages: Record<string, string> = {
+    approved: "تم قبول طلب المدرب وتفعيل حسابه كمدرب بنجاح.",
+    rejected: "تم رفض طلب المدرب بنجاح.",
+  };
+
+  return success ? messages[success] : null;
+}
+
+function getErrorMessage(error?: string) {
+  const messages: Record<string, string> = {
+    not_found: "لم يتم العثور على الطلب.",
+    already_reviewed: "لا يمكن تعديل هذا الطلب لأنه تمت مراجعته بالفعل.",
+    server: "حدث خطأ أثناء تنفيذ العملية. حاول مرة أخرى.",
+  };
+
+  return error ? messages[error] : null;
+}
+
+export default async function AdminInstructorApplicationsPage({
+  searchParams,
+}: AdminInstructorApplicationsPageProps) {
   const user = await getCurrentUser();
+  const params = await searchParams;
 
   if (!user) {
     redirect("/login");
@@ -86,6 +112,9 @@ export default async function AdminInstructorApplicationsPage() {
     (application) => application.status === "REJECTED"
   ).length;
 
+  const successMessage = getSuccessMessage(params.success);
+  const errorMessage = getErrorMessage(params.error);
+
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <header className="border-b border-[var(--border-soft)] bg-white/95 backdrop-blur-xl">
@@ -119,6 +148,18 @@ export default async function AdminInstructorApplicationsPage() {
 
       <section className="px-5 py-8 sm:px-8 lg:px-20">
         <div className="mx-auto max-w-7xl">
+          {successMessage ? (
+            <div className="mb-5 rounded-2xl border border-green-100 bg-green-50 p-4 text-sm font-bold text-green-700">
+              {successMessage}
+            </div>
+          ) : null}
+
+          {errorMessage ? (
+            <div className="mb-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-700">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <div className="mb-6 grid gap-4 md:grid-cols-4">
             <div className="rounded-2xl border border-[var(--border-soft)] bg-white p-5 shadow-sm">
               <p className="text-sm font-bold text-[var(--text-muted)]">
@@ -130,27 +171,21 @@ export default async function AdminInstructorApplicationsPage() {
             </div>
 
             <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5 shadow-sm">
-              <p className="text-sm font-bold text-amber-800">
-                قيد المراجعة
-              </p>
+              <p className="text-sm font-bold text-amber-800">قيد المراجعة</p>
               <p className="mt-2 text-3xl font-extrabold text-amber-900">
                 {pendingCount}
               </p>
             </div>
 
             <div className="rounded-2xl border border-green-100 bg-green-50 p-5 shadow-sm">
-              <p className="text-sm font-bold text-green-700">
-                مقبولة
-              </p>
+              <p className="text-sm font-bold text-green-700">مقبولة</p>
               <p className="mt-2 text-3xl font-extrabold text-green-800">
                 {approvedCount}
               </p>
             </div>
 
             <div className="rounded-2xl border border-red-100 bg-red-50 p-5 shadow-sm">
-              <p className="text-sm font-bold text-red-700">
-                مرفوضة
-              </p>
+              <p className="text-sm font-bold text-red-700">مرفوضة</p>
               <p className="mt-2 text-3xl font-extrabold text-red-800">
                 {rejectedCount}
               </p>
@@ -163,7 +198,8 @@ export default async function AdminInstructorApplicationsPage() {
                 قائمة طلبات المدربين
               </h2>
               <p className="mt-2 text-sm font-bold text-[var(--text-muted)]">
-                هذه الصفحة للعرض فقط حاليًا. سنضيف القبول والرفض في الخطوة التالية.
+                يمكنك قبول الطلب لتفعيل المستخدم كمدرب، أو رفض الطلب مع حفظ
+                حالة المراجعة.
               </p>
             </div>
 
@@ -178,7 +214,7 @@ export default async function AdminInstructorApplicationsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[1100px] border-collapse text-right">
+                <table className="w-full min-w-[1250px] border-collapse text-right">
                   <thead className="bg-[var(--surface-soft)]">
                     <tr className="text-sm text-[var(--text-muted)]">
                       <th className="px-5 py-4 font-extrabold">المدرب</th>
@@ -186,7 +222,10 @@ export default async function AdminInstructorApplicationsPage() {
                       <th className="px-5 py-4 font-extrabold">التخصص</th>
                       <th className="px-5 py-4 font-extrabold">فكرة الكورس</th>
                       <th className="px-5 py-4 font-extrabold">الحالة</th>
-                      <th className="px-5 py-4 font-extrabold">تاريخ الإرسال</th>
+                      <th className="px-5 py-4 font-extrabold">
+                        تاريخ الإرسال
+                      </th>
+                      <th className="px-5 py-4 font-extrabold">الإجراءات</th>
                     </tr>
                   </thead>
 
@@ -232,7 +271,8 @@ export default async function AdminInstructorApplicationsPage() {
 
                         <td className="px-5 py-4">
                           <p className="line-clamp-3 max-w-[260px] text-sm font-bold leading-7 text-[var(--text-muted)]">
-                            {application.proposedCourse || "لم يتم إدخال فكرة كورس"}
+                            {application.proposedCourse ||
+                              "لم يتم إدخال فكرة كورس"}
                           </p>
                         </td>
 
@@ -244,6 +284,12 @@ export default async function AdminInstructorApplicationsPage() {
                           >
                             {getStatusLabel(application.status)}
                           </span>
+
+                          {application.reviewNote ? (
+                            <p className="mt-2 max-w-[220px] text-xs font-bold leading-6 text-[var(--text-muted)]">
+                              {application.reviewNote}
+                            </p>
+                          ) : null}
                         </td>
 
                         <td className="px-5 py-4">
@@ -256,6 +302,47 @@ export default async function AdminInstructorApplicationsPage() {
                               تمت المراجعة: {formatDate(application.reviewedAt)}
                             </p>
                           ) : null}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          {application.status === "PENDING" ? (
+                            <div className="grid gap-2">
+                              <form
+                                action={`/api/admin/instructor-applications/${application.id}/approve`}
+                                method="POST"
+                              >
+                                <button
+                                  type="submit"
+                                  className="w-full rounded-xl bg-green-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-green-700"
+                                >
+                                  قبول
+                                </button>
+                              </form>
+
+                              <form
+                                action={`/api/admin/instructor-applications/${application.id}/reject`}
+                                method="POST"
+                                className="grid gap-2"
+                              >
+                                <input
+                                  name="reviewNote"
+                                  className="w-full rounded-xl border border-[var(--border-soft)] bg-white px-3 py-2 text-xs outline-none focus:border-[var(--brand-500)]"
+                                  placeholder="سبب الرفض اختياري"
+                                />
+
+                                <button
+                                  type="submit"
+                                  className="w-full rounded-xl bg-red-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-red-700"
+                                >
+                                  رفض
+                                </button>
+                              </form>
+                            </div>
+                          ) : (
+                            <p className="text-xs font-bold text-[var(--text-muted)]">
+                              تمت المراجعة
+                            </p>
+                          )}
                         </td>
                       </tr>
                     ))}
